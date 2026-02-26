@@ -158,3 +158,23 @@ Correction: `match: "Source Address. Source User"` with `split_into: ["src", "sr
 expands the single malformed token back into two correct tokens. `match` (value-based)
 is used rather than `position` (index-based) so the fix is independent of
 `strip_leading_future_use` and upstream field additions.
+
+### Threat_Log — Swapped trailing fields (PAN-OS docs error, not yet corrected)
+
+PAN-OS documentation lists the final two fields of the Threat Log format string in the
+wrong order compared to URL Filtering and Data Filtering, which have identical schemas:
+
+| Log Type | Documented trailing order | Correct order (from received logs) |
+|---|---|---|
+| Threat_Log | `..., Flow Type, Cluster Name` | `..., Cluster Name, Flow Type` |
+| URL_Filtering_Log | `..., Cluster Name, Flow Type` | `..., Cluster Name, Flow Type` ✅ |
+| Data_Filtering_Log | `..., Cluster Name, Flow Type` | `..., Cluster Name, Flow Type` ✅ |
+
+The correct field order is `Cluster Name, Flow Type`, confirmed from actual received logs
+and consistent with URL Filtering and Data Filtering. The PAN-OS Threat Log Fields
+documentation page has `Flow Type` and `Cluster Name` transposed.
+
+**Status:** documented but not yet corrected in PALOS. The current `Threat_Log_format.csv`
+line 2 reflects the erroneous documented order (`flow_type, cluster_name`). A future
+`per_log_corrections` entry with `match: "flow_type"` swapping positions with `cluster_name`
+would fix this without modifying the scraper logic.
