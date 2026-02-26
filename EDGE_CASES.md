@@ -19,7 +19,7 @@ alongside a field's long name. `token_corrections` maps each incorrect value to 
 form. This correction is applied both to the `*_fields.csv` Variable Name column and to each
 output token in the transformed format string line.
 
-| Affected Log(s) | Field Name | PA docs value | Corrected to | Notes |
+| Log Type | Field Name | PA docs value | Variable Name | Notes |
 |---|---|---|---|---|
 | User-ID_Log | FUTURE_USE | `FUTURE_USER` | `FUTURE_USE` | Typo in PA field table |
 | IP_Tag_Log, Auth, URL, Threat, User-ID | High Resolution Timestamp | `high_res` | `high_res_timestamp` | Truncated; full name confirmed from other log types where it appears correctly |
@@ -37,13 +37,13 @@ fills these from `global_name_overrides`, using the long field name as the looku
 are cross-referenced from other log types (System_Log, Config_Log) that do include the
 parenthetical for the same field.
 
-| Log Type | Field Name | PA docs Variable Name | PALOS fills with | Cross-reference source |
+| Log Type | Field Name | PA docs value | Variable Name | Notes |
 |---|---|---|---|---|
-| Audit_Log | Serial Number | *(empty)* | `serial` | System_Log / Config_Log field tables |
-| Audit_Log | Event ID | *(empty)* | `eventid` | System_Log field table |
-| Audit_Log | Object | *(empty)* | `object` | Config_Log field table |
-| Audit_Log | CLI Command | *(empty)* | `cmd` | Config_Log field table |
-| Audit_Log | Severity | *(empty)* | `severity` | System_Log field table |
+| Audit_Log | Serial Number | *(empty)* | `serial` | Cross-referenced from System_Log / Config_Log field tables |
+| Audit_Log | Event ID | *(empty)* | `eventid` | Cross-referenced from System_Log field table |
+| Audit_Log | Object | *(empty)* | `object` | Cross-referenced from Config_Log field table |
+| Audit_Log | CLI Command | *(empty)* | `cmd` | Cross-referenced from Config_Log field table |
+| Audit_Log | Severity | *(empty)* | `severity` | Cross-referenced from System_Log field table |
 
 ---
 
@@ -60,7 +60,7 @@ inconsistent phrasing across log types, or missing parentheticals. These are enc
 Two log types (IP_Tag_Log uses "Generate Time"; most others use "Generated Time") produce
 a long name that does not match any parenthetical in their own field table.
 
-| Long name in format string | Mapped to | Affected log types |
+| Long name in format string | Variable Name | Log Type |
 |---|---|---|
 | "Generated Time" | `time_generated` | Most log types |
 | "Generate Time" | `time_generated` | IP_Tag_Log |
@@ -71,7 +71,7 @@ PA documentation uses three distinct naming patterns for the same concept across
 log types. The code handles `Device Group Hierarchy Level N` via regex; the other two are
 handled by `global_name_overrides`.
 
-| Pattern in format string | Example | Mapped to |
+| Pattern in format string | Example | Variable Name |
 |---|---|---|
 | `Device Group Hierarchy Level N` | "Device Group Hierarchy Level 1" | `dg_hier_level_1` (regex in `_transform_format_string`) |
 | `DG Hierarchy Level N` | "DG Hierarchy Level 1" | `dg_hier_level_1` |
@@ -82,7 +82,7 @@ handled by `global_name_overrides`.
 These long names appear in format strings but do not auto-map to a variable name, each
 for a specific reason documented in the Root Cause column below.
 
-| Field Name (in *_fields.csv) | Long name in format string | Mapped to | Affected log types | Root Cause |
+| Field Name (in *_fields.csv) | Long name in format string | Variable Name | Log Type | Notes |
 |---|---|---|---|---|
 | Threat/Content Name (threatid) | "Threat ID" | `threatid` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Format string name differs from field table name |
 | Source Country (srcloc) | "Source Location" | `srcloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
@@ -124,7 +124,7 @@ field position that cannot be fixed by a simple token or name override.
 
 PA's GlobalProtect field table contains two serial-related rows:
 
-| Row | Field Name | PA docs Variable Name | Correct value |
+| Row | Field Name | PA docs value | Variable Name |
 |---|---|---|---|
 | 2 | Serial # (serial) | `serial` | `serial` ✅ |
 | 19 | Serial Number (serialnumber) | `serialnumber` | `serialnumber` ✅ |
