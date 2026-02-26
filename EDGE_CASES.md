@@ -25,6 +25,8 @@ output token in the transformed format string line.
 | IP_Tag_Log, Auth, URL, Threat, User-ID | High Resolution Timestamp | `high_res` | `high_res_timestamp` | Truncated; full name confirmed from other log types where it appears correctly |
 | IP_Tag_Log | Event ID | `event_id` | `eventid` | Underscore inconsistency; PAN-OS uses `eventid` (no underscore) across all other log types |
 | Traffic_Log | Tunnel ID/IMSI | `tunnelid/imsi` | `tunnel_id/imsi` | Missing underscore before slash |
+| Tunnel_Inspection_Log | Tunnel ID | `tunnelid` | `tunnel_id/imsi` | Field table uses "Tunnel ID (tunnelid)" without /IMSI suffix; corrected to match format string mapping |
+| Tunnel_Inspection_Log | Monitor Tag | `monitortag` | `monitortag/imei` | Field table uses "Monitor Tag (monitortag)" without /IMEI suffix; corrected to match format string mapping |
 | GTP_Log | A Slice Service Type | `nsdsai_sst` | `nssai_sst` | "nsdsai" is a PAN-OS typo for "nssai" (correct 3GPP S-NSSAI abbreviation) |
 | GTP_Log | A Slice Differentiator | `nsdsai_sd` | `nssai_sd` | Same "nsdsai" → "nssai" typo |
 
@@ -101,8 +103,8 @@ for a specific reason documented in the Root Cause column below.
 | SSL Response Time (response_time) | "Response Time" | `response_time` | GlobalProtect_Log | Format string name differs from field table name |
 | Gateway Priority (priority) | "Priority" | `priority` | GlobalProtect_Log | Format string name differs from field table name |
 | Gateway Name (gateway) | "Gateway" | `gateway` | GlobalProtect_Log | Format string name differs from field table name |
-| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Tunnel_Inspection_Log | Field table lacks `/IMSI` suffix; auto-detection fails. Other log types auto-detect correctly: Traffic/Threat/URL/Data → `tunnel_id/imsi`, GTP → `imsi`. Handled by token_corrections fallback (fires only when auto-detection leaves the long name unmapped). |
-| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Tunnel_Inspection_Log | Field table lacks `/IMEI` suffix; auto-detection fails. Other log types auto-detect correctly: Traffic/Threat/URL/Data → `monitortag/imei`, GTP → `imei`. Handled by token_corrections fallback. |
+| Tunnel ID (tunnel_id/imsi) | "Tunnel ID/IMSI" | `tunnel_id/imsi` | Tunnel_Inspection_Log | Field table lacks `/IMSI` suffix so auto-detection fails; format string token remains unmapped and is caught by token_corrections. Fields CSV variable name also corrected via token_corrections (`tunnelid` → `tunnel_id/imsi`). Other log types auto-detect: Traffic/Threat/URL/Data → `tunnel_id/imsi`, GTP → `imsi`. |
+| Monitor Tag (monitortag/imei) | "Monitor Tag/IMEI" | `monitortag/imei` | Tunnel_Inspection_Log | Field table lacks `/IMEI` suffix so auto-detection fails; format string token remains unmapped and is caught by token_corrections. Fields CSV variable name also corrected via token_corrections (`monitortag` → `monitortag/imei`). Other log types auto-detect: Traffic/Threat/URL/Data → `monitortag/imei`, GTP → `imei`. |
 | Tunnel Type (tunnel) | "Tunnel" | `tunnel` | Decryption_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
 | Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Format string name differs from field table name |
 | Security Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string name differs from field table name |
