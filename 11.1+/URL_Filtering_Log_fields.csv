@@ -82,7 +82,9 @@ override-lockout—too many failed admin override pass code attempts from the so
 
 override —response to a block-override page where a correct pass code is provided and the request is allowed"
 URL/Filename (misc),misc,"Field with variable length. A URL has a maximum of 1023 characters.
+
 The actual URI when the subtype is url.
+
 URL when Threat Category is domain-edl."
 Threat/Content Name (threatid),threatid,"Palo Alto Networks identifier for known and custom threats. It is a description string followed by a 64-bit numerical identifier in parentheses for some Subtypes:
 
@@ -101,8 +103,10 @@ Threat/Content Name (threatid),threatid,"Palo Alto Networks identifier for known
 52000 – 52999— filetype detection
 
 60000 – 69999 —data filtering detection
+
 If the domain EDL field is populated, then this field is populated with the same value.
 
+FM Dita Overlay for Notes Component
 
 Threat ID ranges for virus detection, WildFire signature feed, and DNS C2 signatures used in previous releases have been replaced with permanent, globally unique IDs. Refer to the Threat/Content Type (subtype) and Threat Category (thr_category) field names to create updated reports, filter threat logs, and ACC activity."
 Category (category),category,"For URL Subtype, it is the URL Category; For WildFire subtype, it is the verdict on the file and is either ‘malware’, ‘phishing’, ‘grayware’, or ‘benign’; For other subtypes, the value is ‘any’."
@@ -119,16 +123,21 @@ Destination Country (dstloc),dstloc,Destination country or Internal region for p
 Content Type (contenttype),contenttype,Content type of the HTTP response data. Maximum length 32 bytes.
 PCAP ID (pcap_id),pcap_id,"The packet capture (pcap) ID is a 64 bit unsigned integral denoting an ID to correlate threat pcap files with extended pcaps taken as a part of that flow. All threat logs will contain either a pcap_id of 0 (no associated pcap), or an ID referencing the extended pcap file."
 File Digest (filedigest),filedigest,"Only for WildFire subtype; all other types do not use this field
+
 The filedigest string shows the binary hash of the file sent to be analyzed by the WildFire service."
 Cloud (cloud),cloud,"Only for WildFire subtype; all other types do not use this field.
+
 The cloud string displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis."
 URL Index (url_idx),url_idx,"When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session.
+
 For example, to learn the URL of a file that the firewall forwarded to WildFire for analysis, locate the session ID and the url_idx from the WildFire Submissions log and search for the same session ID and url_idx in your URL filtering logs. The log entry that matches the session ID and url_idx will contain the URL of the file that was forwarded to WildFire."
 User Agent (user_agent),user_agent,"The User Agent field specifies the web browser that the user used to access the URL, for example Internet Explorer. This information is sent in the HTTP request to the server."
 File Type (filetype),filetype,"Only for WildFire subtype; all other types do not use this field.
+
 Specifies the type of file that the firewall forwarded for WildFire analysis."
 X-Forwarded-For (xff),xff,"The X-Forwarded-For field in the HTTP header contains the IP address of the user who requested the web page. It allows you to identify the IP address of the user, which is useful particularly if you have a proxy server on your network that replaces the user IP address with its own address in the source IP address field of the packet header.
 
+FM Dita Overlay for Notes Component
 
 Based on different appliance implementations, the XFF field may contain non-IP address values."
 Referer (referer),referer,The Referer field in the HTTP header contains the URL of the web page that linked the user to another web page; it is the source that redirected (referred) the user to the web page that is being requested.
@@ -136,10 +145,13 @@ Sender (sender),sender,Specifies the name of the sender of an email.
 Subject (subject),subject,Specifies the subject of an email.
 Recipient (recipient),recipient,Specifies the name of the receiver of an email.
 Report ID (reportid),reportid,"Only for Data Filtering and WildFire subtype; all other types do not use this field.
+
 Identifies the analysis request on the firewall, WildFire cloud, or the WildFire appliance."
 Device Group Hierarchy (dg_hier_level_1 to dg_hier_level_4),dg_hier_level_1,"A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure.
+
 If the log values are 12, 34, 45, 0, it means that the log was generated by a firewall (or virtual system) that belongs to device group 45, and its ancestors are 34, and 12. To view the device group names that correspond to the value 12, 34 or 45, use one of the following methods:
-API query:
+
+API query: FM Dita Overlay for Code
 
 /api/?type=op&cmd=<show><dg-hierarchy></dg-hierarchy></show>"
 Virtual System Name (vsys_name),vsys_name,The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems.
@@ -153,10 +165,12 @@ Parent Session ID (parent_session_id),parent_session_id,ID of the session in whi
 Parent Session Start Time (parent_start_time),parent_start_time,Year/month/day hours:minutes:seconds that the parent tunnel session began.
 Tunnel Type (tunnel),tunnel,"Type of tunnel, such as GRE or IPSec."
 Threat Category (thr_category),thr_category,"Describes threat categories used to classify different types of threat signatures.
+
 If a domain external dynamic list generated the log, domain-edl populates this field."
 Content Version (contentver),contentver,Applications and Threats version on your firewall when the log was generated.
 SCTP Association ID (assoc_id),assoc_id,Number that identifies all connections for an association between two SCTP endpoints.
-Payload Protocol ID (ppid),ppid,ID of the protocol for the payload in the data portion of thedata chunk.
+Payload Protocol ID (ppid),ppid,"ID of the protocol for the payload in the data portion of the
+data chunk."
 HTTP Headers (http_headers),http_headers,Indicates the inserted HTTP header in the URL log entries on the firewall.
 URL Category List (url_category_list),url_category_list,Lists the URL filtering categories that the firewall used to enforce policy.
 Rule UUID (rule_uuid),rule_uuid,The UUID that permanently identifies the rule.
@@ -168,6 +182,7 @@ TCP connection session ID—session is HTTP/2
 Dynamic User Group Name (dynusergroup_name),dynusergroup_name,The name of the dynamic user group that contains the user who initiated the session.
 XFF Address (xff_ip),xff_ip,"The IP address of the user who requested the web page or the IP address of the next to last device that the request traversed. If the request goes through one or more proxies, load balancers, or other upstream devices, the firewall displays the IP address of the most recent device.
 
+FM Dita Overlay for Notes Component
 
 Based on different appliance implementations, the XFF field may contain non-IP address values."
 Source Device Category (src_category),src_category,The category for the device that Device-ID identifies as the source of the traffic.
@@ -198,6 +213,7 @@ Source Dynamic Address Group (src_dag),src_dag,Original session source dynamic a
 Destination Dynamic Address Group (dst_dag),dst_dag,Original destination source dynamic address group.
 Partial Hash (partial_hash),partial_hash,Machine Learning partial hash.
 High Resolution Timestamp (high_res timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
+
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year
@@ -218,6 +234,7 @@ sss—One or more digits for millisecond
 
 TZD—Time zone designator (+hh:mm or -hh:mm)
 
+FM Dita Overlay for Notes Component
 
 The High Resolution Timestamp is supported for logs received from managed firewalls running PAN-OS 10.1 and later releases. Logs received from managed firewalls running PAN-OS 9.1 and earlier releases display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log was received."
 Reason (reason),reason,Reason for URL Filtering action.
@@ -253,7 +270,9 @@ Tunneled Application (tunneled_app),tunneled_app,Name of the tunneled applicatio
 Application SaaS (is_saas_of_app),is_saas_of_app,Displays yes if a SaaS application or no if not a SaaS application.
 Application Sanctioned State (sanctioned_state_of_app),sanctioned_state_of_app,Displays yes if application is sanctioned or no if application is not sanctioned.
 Cloud Report ID (cloud_reportid),cloud_reportid,"(PAN-OS 10.2.0) Unique 32 character ID for a file scanned by the DLP cloud service sent by a firewall.
+
 (PAN-OS 10.2.1 and later releases) Unique 67 character ID for a file scanned by the DLP cloud service sent by a firewall.
+
 The same Cloud Report ID is displayed for a file the DLP cloud service has already scanned and generated a Cloud Report ID for."
 Cluster Name (cluster_name) (11.1 and later releases),cluster_name,Name of the CN-Series firewall cluster.
 Flow Type (flow_type),flow_type,"(11.1 and later releases) Identifies the type of proxy used for traffic. If a proxy is used, Explicit Proxy or Transparent Proxy is displayed. If no proxy is used, NonProxyTraffic is displayed."

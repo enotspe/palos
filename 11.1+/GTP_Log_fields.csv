@@ -27,7 +27,9 @@ Source Port (sport),sport,Source port utilized by the session.
 Destination Port (dport),dport,Destination port utilized by the session.
 IP Protocol (proto),proto,IP protocol associated with the session.
 Action (action),action,"Action taken for the session; possible values are:
+
 allow—session was allowed by policy
+
 deny—session was denied by policy"
 GTP Event Type (event_type),event_type,Defines event triggered by a GTP message when checks in GTP protection profile are applied to the GTP traffic. Also triggered by the start or end of a GTP session.
 MSISDN (msisdn),msisdn,"Service identity associated with the mobile subscriber composed of a Country Code, National Destination Code and a Subscriber. Consists of decimal digits (0-9) only with a maximum of 15 digits."
@@ -51,12 +53,14 @@ Tunnel ID/IMSI (imsi),imsi,International Mobile Subscriber Identity (IMSI) is a 
 Monitor Tag/IMEI (imei),imei,International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment.
 Start Time (start),start,Time of session start.
 Elapsed Time (elapsed),elapsed,Elapsed time of the session.
-Tunnel Inspection Rule(tunnel_insp_rule),,Name of the tunnel inspection rule matching the cleartext tunnel traffic
+"Tunnel Inspection Rule
+(tunnel_insp_rule)",tunnel_insp_rule,Name of the tunnel inspection rule matching the cleartext tunnel traffic
 Remote User IP (remote_user_ip),remote_user_ip,IPv4 or IPv6 address used by a remote user.
 Remote User ID (remote_user_id),remote_user_id,"IMSI identity of a remote user, and if available, one IMEI identity and/or one MSISDN identity."
 UUID for rule (rule_uuid),rule_uuid,Universally Unique ID for rule.
 PCAP ID (pcap_id),pcap_id,Unique packet capture ID that is used to locate the pcap file saved on the firewall.
 High Resolution Timestamp (high_res_timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
+
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year
@@ -77,6 +81,7 @@ sss—One or more digits for millisecond
 
 TZD—Time zone designator (+hh:mm or -hh:mm)
 
+FM Dita Overlay for Notes Component
 
 The High Resolution Timestamp is supported for logs received from managed firewalls running PAN-OS 11.1 and later releases. Logs received from managed firewalls running PAN-OS 9.1 and earlier releases display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log was received."
 A Slice Service Type (nsdsai_sst),nssai_sst,The A Slice Service Type of the Network Slice ID.
