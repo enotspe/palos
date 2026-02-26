@@ -83,33 +83,35 @@ These long names appear in format strings but have no matching parenthetical in 
 auto-detected field table, typically because the field table uses a different phrasing
 or the field is shared infrastructure added to many log types.
 
-| Long name in format string | Mapped to | Affected log types |
-|---|---|---|
-| "Threat ID" | `threatid` | Threat, URL Filtering, Data Filtering |
-| "Source Location" | `srcloc` | Threat, URL Filtering |
-| "Destination Location" | `dstloc` | Threat, URL Filtering |
-| "Parent Start Time" | `parent_start_time` | Threat, URL Filtering, Data Filtering |
-| "PCAP_ID" | `pcap_id` | Threat, URL Filtering, Data Filtering |
-| "Subtype" | `subtype` | Multiple (casing mismatch) |
-| "Serial" | `serial` | Multiple (casing mismatch) |
-| "Fingerprint" | `fingerprint` | Multiple (casing mismatch) |
-| "IPv6 Source Address" | `srcipv6` | HIP Match |
-| "High Res Timestamp" | `high_res_timestamp` | GlobalProtect |
-| "Selection Type" | `selection_type` | GlobalProtect |
-| "Response Time" | `response_time` | GlobalProtect |
-| "Tunnel ID/IMSI" | `tunnelid` | Tunnel Inspection |
-| "Monitor Tag/IMEI" | `monitortag` | Tunnel Inspection |
-| "Tunnel" | `tunnel` | Tunnel Inspection |
-| "Strict Check" | `strict_check` | Tunnel Inspection |
-| "Rule UUID" | `rule_uuid` | Tunnel Inspection |
-| "Dynamic User Group" | `dynusergroup_name` | Tunnel Inspection |
-| "Threat/Content Type" | `subtype` | Decryption |
-| "Issuer Subject Common Name" | `issuer_cn` | Decryption |
-| "Root Subject Common Name" | `root_cn` | Decryption |
-| "Server Name Indication" | `sni` | Decryption |
-| "End User IP Address" | `end_ip_adr` | GTP |
-| "Serving Country MCC" | `mcc` | GTP |
-| "Tunnel Inspection Rule" | `tunnel_insp_rule` | GTP |
+| Field Name (in *_fields.csv) | Long name in format string | Mapped to | Affected log types |
+|---|---|---|---|
+| Threat/Content Name (threatid) | "Threat ID" | `threatid` | Threat, URL Filtering, Data Filtering |
+| Source Country (srcloc) | "Source Location" | `srcloc` | Threat, URL Filtering |
+| Destination Country (dstloc) | "Destination Location" | `dstloc` | Threat, URL Filtering |
+| Parent Start Time (parent_start_time) | "Parent Start Time" | `parent_start_time` | Threat, URL Filtering, Data Filtering |
+| PCAP ID (pcap_id) | "PCAP_ID" | `pcap_id` | Threat, URL Filtering, Data Filtering |
+| Threat/Content Type (subtype) | "Subtype" | `subtype` | Multiple (casing mismatch) |
+| Serial Number (serial) | "Serial" | `serial` | Multiple (casing mismatch) |
+| Certificate Fingerprint (fingerprint) | "Fingerprint" | `fingerprint` | Multiple (casing mismatch) |
+| IPv6 System Address (srcipv6) | "IPv6 Source Address" | `srcipv6` | HIP Match |
+| High Resolution Timestamp (high_res_timestamp) | "High Res Timestamp" | `high_res_timestamp` | GlobalProtect |
+| Gateway Selection Method (selection_type) | "Selection Type" | `selection_type` | GlobalProtect |
+| SSL Response Time (response_time) | "Response Time" | `response_time` | GlobalProtect |
+| Gateway Priority (priority) | "Priority" | `priority` | GlobalProtect |
+| Gateway Name (gateway) | "Gateway" | `gateway` | GlobalProtect |
+| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Tunnel Inspection |
+| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Tunnel Inspection |
+| Tunnel Type (tunnel) | "Tunnel" | `tunnel` | Tunnel Inspection |
+| Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel Inspection |
+| Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Tunnel Inspection |
+| Dynamic User Group Name (dynusergroup_name) | "Dynamic User Group" | `dynusergroup_name` | Tunnel Inspection |
+| Threat/Content Type (subtype) | "Threat/Content Type" | `subtype` | Decryption |
+| Issuer Common Name (issuer_cn) | "Issuer Subject Common Name" | `issuer_cn` | Decryption |
+| Root Common Name (root_cn) | "Root Subject Common Name" | `root_cn` | Decryption |
+| Server Name Indication(sni) | "Server Name Indication" | `sni` | Decryption |
+| End IP Address (end_ip_adr) | "End User IP Address" | `end_ip_adr` | GTP |
+| Serving Network MCC (mcc) | "Serving Country MCC" | `mcc` | GTP |
+| Tunnel Inspection Rule (tunnel_insp_rule) | "Tunnel Inspection Rule" | `tunnel_insp_rule` | GTP |
 
 ---
 
