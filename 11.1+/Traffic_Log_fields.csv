@@ -131,7 +131,7 @@ Device Name (device_name),device_name,The hostname of the firewall on which the 
 Action Source (action_source),action_source,"Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session."
 Source VM UUID (src_uuid),src_uuid,Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment.
 Destination VM UUID (dst_uuid),dst_uuid,Identifies the destination universal unique identifier for a guest virtual machine in the VMware NSX environment.
-Tunnel ID/IMSI (tunnelid/imsi),tunnelid/imsi,International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system. IMSI shall consist of decimal digits (0 through 9) only and maximum number of digits allowed are 15.
+Tunnel ID/IMSI (tunnelid/imsi),tunnel_id/imsi,International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system. IMSI shall consist of decimal digits (0 through 9) only and maximum number of digits allowed are 15.
 Monitor Tag/IMEI (monitortag/imei),monitortag/imei,International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment.
 Parent Session ID (parent_session_id),parent_session_id,ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only.
 Parent Start Time (parent_start_time),parent_start_time,Year/month/day hours:minutes:seconds that the parent tunnel session began.

@@ -7,7 +7,7 @@ Generated Time (time_generated or cef-formatted-time_generated),time_generated,T
 Virtual System (vsys),vsys,The virtual system associated with the HIP match log.
 Source IP (src),src,The IP address of the source user.
 Tag Name (tag_name),tag_name,The tag mapped to the source IP address.
-Event ID (event_id),event_id,A string showing the name of the event.
+Event ID (event_id),eventid,A string showing the name of the event.
 Repeat Count (repeatcnt),repeatcnt,"The number of sessions with the same Source IP, Destination IP, Application, and Subtype seen within 5 seconds."
 Timeout (timeout),timeout,The amount of time before the IP address-to-tag mapping expires for the source IP address.
 Data Source Name (datasourcename),datasourcename,The name of the source from which mapping information is collected.
@@ -23,7 +23,7 @@ API query:
 Virtual System Name (vsys_name),vsys_name,The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems.
 Device Name (device_name),device_name,The hostname of the firewall on which the session was logged.
 Virtual System ID (vsys_id),vsys_id,A unique identifier for a virtual system on a Palo Alto Networks firewall.
-High Resolution Timestamp (high_res timestamp),high_res,"Time in milliseconds the log was received at the management plane.
+High Resolution Timestamp (high_res timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year

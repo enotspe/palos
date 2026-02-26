@@ -1,17 +1,68 @@
-# Palo Alto PAN-OS Syslog Field Documentation Scraper
+# PALOS — PAN-OS Logs Scraper
 
-This directory contains a web scraper for extracting Palo Alto Networks PAN-OS syslog field documentation from the official documentation website.
+PALOS is a web scraper that extracts Palo Alto Networks PAN-OS syslog field documentation
+from the official PA Networks docs site and transforms it into clean, structured CSV datasets.
+It is designed for security engineers and data teams who need machine-readable syslog schemas
+for parser development, log normalization, or field reference — without manually crawling
+seventeen separate documentation pages per PAN-OS version.
 
-## Files
+## Quick Start
 
-- **`paloalto_scraper.py`** - Main scraper script
-- **`paloalto_scraper_config.yaml`** - Configuration file with URLs and settings
-- **`11.0/`** - Directory for PAN-OS 11.0 data (placeholder)
-- **`11.1+/`** - Directory containing scraped data for PAN-OS 11.1+
+```bash
+pip install requests beautifulsoup4 pandas lxml pyyaml
+python3 paloalto_scraper.py
+```
+
+Output lands in version-named subdirectories (e.g. `11.1+/`) in the current working directory.
+
+## Output
+
+```
+{version}/
+  {LogType}_format.csv        # 2 lines: original format string, then variable-name format
+  {LogType}_fields.csv        # Field Name, Variable Name, Description (+ any extra cols)
+panos_syslog_fields.csv       # Consolidated matrix: position × log type (coming soon)
+```
+
+**`{LogType}_format.csv`** — line 1 is the raw comma-separated format string exactly as PA
+documents it (e.g. `FUTURE_USE, Receive Time, Serial Number, ...`). Line 2 is the transformed
+version with long names replaced by their snake_case variable names (`FUTURE_USE, receive_time,
+serial, ...`). Both lines are quoted CSV so they parse cleanly into arrays.
+
+**`{LogType}_fields.csv`** — the field reference table scraped from PA docs, with a `Variable Name`
+column inserted after `Field Name`. Variable names are extracted from the parenthetical in each
+field's name (e.g. `Serial Number (serial)` → `serial`) and post-processed to fix PA docs
+inconsistencies. See [EDGE_CASES.md](EDGE_CASES.md) for the full list of corrections.
+
+## Configuration
+
+Edit `paloalto_scraper_config.yaml` to customize behaviour:
+
+| Setting | Default | Effect |
+|---------|---------|--------|
+| `base_delay` | `1.0` | Seconds between HTTP requests (rate limiting) |
+| `force_rescrape` | `false` | Re-scrape versions that already exist locally |
+| `dry_run` | `false` | Print scrape plan without fetching any pages |
+| `output_dir` | `"."` | Root directory for all output |
+
+## Adding a New PAN-OS Version
+
+Add a new entry under `versions` in `paloalto_scraper_config.yaml`:
+
+```yaml
+versions:
+  - name: "11.2"
+    log_types:
+      - name: "Traffic_Log"
+        url: "https://docs.paloaltonetworks.com/ngfw/11-2/.../traffic-log-fields"
+      - name: "Threat_Log"
+        url: "https://docs.paloaltonetworks.com/ngfw/11-2/.../threat-log-fields"
+      # ... one entry per log type
+```
+
+PALOS will skip versions that already exist locally unless `force_rescrape: true`.
 
 ## Scraped Log Types (PAN-OS 11.1+)
-
-The scraper extracts data for the following 17 log types:
 
 1. Traffic Log
 2. Threat Log
@@ -31,105 +82,23 @@ The scraper extracts data for the following 17 log types:
 16. GTP Log
 17. Audit Log
 
-## Output Format
+## PA Documentation Notes
 
-For each log type, two files are created:
+PA Networks documentation contains a number of inconsistencies across log types:
+variable names truncated in field tables, typos in parentheticals, fields with no
+parenthetical at all, long names that differ from the format string, and at least one
+literal PA docs bug (a period used instead of a comma as a field separator). PALOS
+corrects all of these automatically through its exceptions system
+(`paloalto_scraper_exceptions.yaml`), so the output variable names are consistent and
+correct even where the source documentation is not.
 
-1. **`{LogType}_format.csv`** - Contains the comma-separated syslog format string
-   - Example: `FUTURE_USE, Receive Time, Serial Number, Type, ...`
+Every known correction is catalogued in [EDGE_CASES.md](EDGE_CASES.md), organized by
+correction layer, with the root cause and affected log types noted for each entry.
 
-2. **`{LogType}_fields.csv`** - Contains the field descriptions table
-   - Columns: `Field Name`, `Description`
-   - Each row describes one field from the format string
+## For Developers & Maintainers
 
-Additionally, a consolidated file is generated:
-
-3. **`panos_syslog_fields.csv`** - A unified view of all log types with fields aligned by position
-   - Each column represents a log type (Traffic, Threat, URL Filtering, etc.)
-   - Each row represents the field at that position across all log types
-   - Useful for comparing field structures and building parsers that handle multiple log types
-
-## Usage
-
-### Basic Usage
-
-```bash
-python3 paloalto_scraper.py
-```
-
-### Configuration Options
-
-Edit `paloalto_scraper_config.yaml` to customize:
-
-- **`versions`** - List of PAN-OS versions to scrape
-- **`base_delay`** - Delay between requests (default: 1.0 seconds)
-- **`force_rescrape`** - Re-scrape existing versions (default: false)
-- **`dry_run`** - Preview what will be scraped without actually scraping (default: false)
-- **`output_dir`** - Output directory (default: current directory)
-
-### Dry Run Mode
-
-To see what would be scraped without actually scraping:
-
-```yaml
-settings:
-  dry_run: true
-```
-
-Then run:
-
-```bash
-python3 paloalto_scraper.py
-```
-
-### Force Re-scrape
-
-To re-scrape versions that already exist:
-
-```yaml
-settings:
-  force_rescrape: true
-```
-
-## Requirements
-
-```bash
-pip install requests beautifulsoup4 pandas lxml pyyaml
-```
-
-## Adding New Versions
-
-To add a new PAN-OS version, edit `paloalto_scraper_config.yaml`:
-
-```yaml
-versions:
-  - name: "11.2"
-    log_types:
-      - name: "Traffic_Log"
-        url: "https://docs.paloaltonetworks.com/ngfw/11-2/..."
-      # ... add more log types
-```
-
-## Example Output
-
-### Traffic_Log_format.csv
-
-```
-FUTURE_USE, Receive Time, Serial Number, Type, Threat/Content Type, FUTURE_USE, Generated Time, Source Address, Destination Address, ...
-```
-
-### Traffic_Log_fields.csv
-
-```csv
-Field Name,Description
-Receive Time (receive_time or cef-formatted-receive_time),Time the log was received at the management plane.
-Serial Number (serial),"Serial number of the firewall that generated the log."
-...
-```
-
-## Notes
-
-- The scraper respects rate limiting with a configurable delay between requests
-- Existing versions are skipped by default unless `force_rescrape` is enabled
-- All scraped data is saved immediately to prevent data loss
-- The scraper uses BeautifulSoup for HTML parsing and pandas for CSV generation
+See [DEVELOPERS_GUIDE.md](DEVELOPERS_GUIDE.md) for:
+- The corrections pipeline walkthrough (5 stages, from raw HTML to final CSV)
+- How to add a new exception (token correction, missing variable name, position-based fix)
+- Key methods reference
+- Architecture overview

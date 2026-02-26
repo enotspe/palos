@@ -57,10 +57,21 @@ class PaloAltoLogScraper:
         # Load force_rescrape and dry_run flags
         self.force_rescrape = config.get('settings', {}).get('force_rescrape', False)
         self.dry_run = config.get('settings', {}).get('dry_run', False)
-        
+
+        # Load exceptions/corrections file
+        exceptions = self._load_config('paloalto_scraper_exceptions.yaml')
+        self.global_name_overrides = exceptions.get('global_name_overrides', {})
+        self.token_corrections = exceptions.get('token_corrections', {})
+        self.per_log_corrections = exceptions.get('per_log_corrections', {})
+        self.strip_leading_future_use = exceptions.get('strip_leading_future_use', False)
+
         logger.info(f"Loaded {len(self.versions)} versions from configuration file")
         logger.info(f"Force rescrape: {self.force_rescrape}")
         logger.info(f"Dry run mode: {self.dry_run}")
+        logger.info(f"Strip leading FUTURE_USE: {self.strip_leading_future_use}")
+        logger.info(f"Loaded {len(self.global_name_overrides)} global name overrides, "
+                    f"{len(self.token_corrections)} token corrections, "
+                    f"{len(self.per_log_corrections)} per-log correction entries")
     
     def _load_config(self, config_file: str) -> dict:
         """
@@ -201,6 +212,32 @@ class PaloAltoLogScraper:
             return match.group(1).split()[0].strip()
         return ""
 
+    def _apply_field_table_corrections(self, field_table: pd.DataFrame) -> pd.DataFrame:
+        """Apply corrections to the Variable Name column of the field table.
+
+        - Non-empty Variable Names: apply token_corrections (fixes PA docs typos).
+        - Empty Variable Names: fill from global_name_overrides using the long field name
+          (handles fields like Audit_Log's Serial Number that have no parenthetical in PA docs).
+        """
+        if 'Variable Name' not in field_table.columns or 'Field Name' not in field_table.columns:
+            return field_table
+
+        corrected_names = []
+        for _, row in field_table.iterrows():
+            var_name = str(row['Variable Name'])
+            field_name = str(row['Field Name'])
+
+            if var_name:
+                corrected_names.append(self.token_corrections.get(var_name, var_name))
+            else:
+                match = re.match(r"^(.+?)\s+\(", field_name)
+                long_name = match.group(1).strip() if match else field_name.strip()
+                corrected_names.append(self.global_name_overrides.get(long_name, ""))
+
+        field_table = field_table.copy()
+        field_table['Variable Name'] = corrected_names
+        return field_table
+
     def _build_name_map(self, field_table: pd.DataFrame) -> Dict[str, str]:
         """Build mapping from long field names to variable names."""
         name_map = {}
@@ -221,6 +258,9 @@ class PaloAltoLogScraper:
                 normalized = re.sub(r'\s+', ' ', long_name)
                 name_map[normalized] = var_name
                 name_map[normalized.lower()] = var_name
+
+        # Global overrides take precedence over auto-detected mappings
+        name_map.update(self.global_name_overrides)
         return name_map
 
     def _transform_format_string(self, format_string: str, name_map: Dict[str, str]) -> str:
@@ -251,8 +291,25 @@ class PaloAltoLogScraper:
             else:
                 new_items.append(item)  # Keep original (e.g., FUTURE_USE)
 
+        # Apply token-level corrections (fixes PA docs typos in Variable Name column)
+        new_items = [self.token_corrections.get(item, item) for item in new_items]
+
         # Enclose each item in double quotes for CSV format
         return ",".join(f'"{item}"' for item in new_items)
+
+    def _apply_per_log_corrections(self, items: list, log_type_name: str) -> list:
+        """Apply strip and position-based corrections for a specific log type."""
+        if self.strip_leading_future_use and items and items[0] == "FUTURE_USE":
+            items = items[1:]
+
+        for correction in self.per_log_corrections.get(log_type_name, []):
+            pos = correction['position']
+            if 'new' in correction:
+                items[pos] = correction['new']
+            elif 'split_into' in correction:
+                items = items[:pos] + correction['split_into'] + items[pos + 1:]
+
+        return items
 
     def _get_cell_text_with_formatting(self, cell) -> str:
         """
@@ -374,6 +431,7 @@ class PaloAltoLogScraper:
         # Extract field table
         field_table = self.extract_field_table(soup)
         if field_table is not None:
+            field_table = self._apply_field_table_corrections(field_table)
             # Save table to CSV
             table_filename = f"{log_type['name']}_fields.csv"
             table_filepath = os.path.join(version_dir, table_filename)
@@ -391,6 +449,13 @@ class PaloAltoLogScraper:
 
             name_map = self._build_name_map(field_table)
             transformed = self._transform_format_string(format_string, name_map)
+
+            # Parse transformed CSV back into a list, apply per-log corrections, re-join
+            items = [item.strip('"') for item in transformed.split('","')]
+            items[0] = items[0].lstrip('"')
+            items[-1] = items[-1].rstrip('"')
+            items = self._apply_per_log_corrections(items, log_type['name'])
+            transformed = ",".join(f'"{item}"' for item in items)
 
             try:
                 with open(format_filepath, 'w', encoding='utf-8') as f:

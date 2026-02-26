@@ -1,0 +1,110 @@
+# Palo Alto PAN-OS Log Scraper - Exceptions and Corrections
+#
+# This file encodes corrections needed because:
+#   - PA documentation is inconsistent across log types (same concept, different spelling)
+#   - PA field tables sometimes have wrong/truncated variable names (typos)
+#   - The scraper's name-mapping logic misses some long-name → variable-name lookups
+#   - One PA doc page has a literal bug (period instead of comma as separator)
+
+# Strip leading FUTURE_USE from all format strings (PA docs always start with it,
+# but it is not a real syslog field)
+strip_leading_future_use: false
+
+# global_name_overrides: merged into name_map before format string transformation.
+# Keys are long field names (as they appear in the format string), values are variable names.
+# These supplement and take precedence over auto-detected mappings from each log type's field table.
+global_name_overrides:
+  # Time fields — PA docs inconsistent: "Generate Time" vs "Generated Time"
+  "Generated Time": "time_generated"
+  "Generate Time": "time_generated"
+
+  # Threat/URL/Data log — tokens not matched by auto-detection
+  "Threat ID": "threatid"
+  "Source Location": "srcloc"
+  "Destination Location": "dstloc"
+  "Parent Start Time": "parent_start_time"
+  "PCAP_ID": "pcap_id"
+
+  # Casing fixes — capitalized long names not matched case-insensitively in format string
+  "Subtype": "subtype"
+  "Serial": "serial"
+  "Fingerprint": "fingerprint"
+  "Priority": "priority"
+  "Gateway": "gateway"
+
+  # GlobalProtect — unmapped long names
+  "High Res Timestamp": "high_res_timestamp"
+  "Selection Type": "selection_type"
+  "Response Time": "response_time"
+
+  # HIP Match
+  "IPv6 Source Address": "srcipv6"
+
+  # Device Group Hierarchy — PA uses 3 different naming patterns across log types.
+  # "Device Group Hierarchy Level N" is already handled by the code regex.
+  "DG Hierarchy Level 1": "dg_hier_level_1"
+  "DG Hierarchy Level 2": "dg_hier_level_2"
+  "DG Hierarchy Level 3": "dg_hier_level_3"
+  "DG Hierarchy Level 4": "dg_hier_level_4"
+  "Device Group Hierarchy 1": "dg_hier_level_1"
+  "Device Group Hierarchy 2": "dg_hier_level_2"
+  "Device Group Hierarchy 3": "dg_hier_level_3"
+  "Device Group Hierarchy 4": "dg_hier_level_4"
+
+  # Tunnel Inspection — unmapped long names
+  "Tunnel ID/IMSI": "tunnelid"
+  "Monitor Tag/IMEI": "monitortag"
+  "Tunnel": "tunnel"
+  "Strict Check": "strict_check"
+  "Rule UUID": "rule_uuid"
+  "Dynamic User Group": "dynusergroup_name"
+
+  # Decryption — unmapped long names
+  "Threat/Content Type": "subtype"
+  "Issuer Subject Common Name": "issuer_cn"
+  "Root Subject Common Name": "root_cn"
+  "Server Name Indication": "sni"
+
+  # GTP — unmapped long names
+  "End User IP Address": "end_ip_adr"
+  "Serving Country MCC": "mcc"
+  "Tunnel Inspection Rule": "tunnel_insp_rule"
+
+  # Audit_Log — PA docs omit variable names from the field table for these fields;
+  # names confirmed from System_Log and Config_Log field tables which do include them
+  "Serial Number": "serial"
+  "Event ID": "eventid"
+  "Object": "object"
+  "CLI Command": "cmd"
+  "Severity": "severity"
+
+# token_corrections: applied to each output token after format string transformation.
+# Keys are incorrect variable names that the scraper produces, values are the correct names.
+# Fixes PA docs typos in the Variable Name column of field tables.
+token_corrections:
+  "FUTURE_USER": "FUTURE_USE" # User-ID log: typo in PA docs field table
+  "high_res": "high_res_timestamp" # IP-Tag, User-ID, Auth, URL, Threat, etc.: truncated in PA field table
+  "event_id": "eventid" # IP-Tag: underscore wrong in PA field table
+  "tunnelid/imsi": "tunnel_id/imsi" # Traffic: PA field table lists without underscore first
+  "nsdsai_sst": "nssai_sst" # GTP: "nsdsai" → "nssai" typo in PA docs
+  "nsdsai_sd": "nssai_sd" # GTP: same typo
+
+# per_log_corrections: position-based corrections applied per log type,
+# AFTER strip_leading_future_use removes position 0.
+# Supports two correction types:
+#   - new: replace token at position with a new value
+#   - split_into: replace token at position with a list of tokens (expands length by len-1)
+per_log_corrections:
+  GlobalProtect_Log:
+    # Device serial number: PA field table says "serialnumber" but actual syslog field is "serial".
+    # Position 19 also has "serialnumber" (a different field) and must NOT be changed.
+    - position: 1
+      new: "serial"
+
+  Correlated_Events_Log:
+    # PA docs bug: format string uses a period instead of a comma between "Source Address"
+    # and "Source User", causing the scraper to read them as one token:
+    # "Source Address. Source User" → must be split back into two fields.
+    # Position 6 = after stripping leading FUTURE_USE (original position 7 in raw format).
+    - position: 6
+      split_into: ["src", "srcuser"]

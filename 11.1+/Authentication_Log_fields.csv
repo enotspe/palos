@@ -31,7 +31,7 @@ Device Name (device_name),device_name,The hostname of the firewall on which the 
 Virtual System ID (vsys_id),vsys_id,A unique identifier for a virtual system on a Palo Alto Networks firewall.
 Authentication Protocol (authproto),authproto,"Indicates the authentication protocol used by the server. For example, PEAP with GTC."
 UUID for rule (rule_uuid),rule_uuid,The UUID that permanently identifies the rule.
-High Resolution Timestamp (high_res _timestamp),high_res,"Time in milliseconds the log was received at the management plane.
+High Resolution Timestamp (high_res _timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year

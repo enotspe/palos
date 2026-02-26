@@ -146,7 +146,7 @@ PCAP ID (pcap_id),pcap_id,Unique packet capture ID that defines the location of 
 Dynamic User Group Name (dynusergroup_name),dynusergroup_name,The name of the dynamic user group that contains the user who initiated the session.
 Source External Dynamic List (src_edl),src_edl,The name of the external dynamic list that contains the source IP address of the traffic.
 Destination External Dynamic List (dst_edl),dst_edl,The name of the external dynamic list that contains the destination IP address of the traffic.
-High Resolution Timestamp (high_res timestamp),high_res,"Time in milliseconds the log was received at the management plane.
+High Resolution Timestamp (high_res timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year

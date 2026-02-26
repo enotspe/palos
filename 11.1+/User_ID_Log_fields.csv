@@ -37,7 +37,7 @@ User Group Found—Indicates whether the user could be mapped to a group.
 Duplicate User—Indicates whether duplicate users were found in a user group. Displays N/A if no user group is found."
 User by Source (userbysource),userbysource,Indicates the username received from the source through IP address-to-username mapping.
 Tag Name (tag_name),tag_name,Name of the tag associated with the dynamic user group associated with the User Group the user is mapped to.
-High Resolution Timestamp (high_res timestamp),high_res,"Time in milliseconds the log was received at the management plane.
+High Resolution Timestamp (high_res timestamp),high_res_timestamp,"Time in milliseconds the log was received at the management plane.
 The format for this new field is YYYY-MM-DDThh:ss:sssTZD:
 
 YYYY—Four digit year

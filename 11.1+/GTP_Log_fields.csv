@@ -79,8 +79,8 @@ TZD—Time zone designator (+hh:mm or -hh:mm)
 
 
 The High Resolution Timestamp is supported for logs received from managed firewalls running PAN-OS 11.1 and later releases. Logs received from managed firewalls running PAN-OS 9.1 and earlier releases display a 1969-12-31T16:00:00:000-8:00 timestamp regardless of when the log was received."
-A Slice Service Type (nsdsai_sst),nsdsai_sst,The A Slice Service Type of the Network Slice ID.
-A Slice Differentiator (nsdsai_sd),nsdsai_sd,The A Slice Differentiator of the Network Slice ID.
+A Slice Service Type (nsdsai_sst),nssai_sst,The A Slice Service Type of the Network Slice ID.
+A Slice Differentiator (nsdsai_sd),nssai_sd,The A Slice Differentiator of the Network Slice ID.
 Application Subcategory (subcategory_of_app),subcategory_of_app,The application subcategory specified in the application configuration properties.
 Application Category (category_of_app),category_of_app,"The application category specified in the application configuration properties. Values are:
 
