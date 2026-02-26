@@ -13,7 +13,7 @@ PALOS is a single-file scraper with two supporting YAML files:
 ```
 paloalto_scraper.py             # All scraping logic
 paloalto_scraper_config.yaml    # Versions to scrape, URLs, run settings
-paloalto_scraper_exceptions.yaml  # Known PA docs corrections (see below)
+paloalto_scraper_exceptions.yaml  # Known PAN-OS docs corrections (see below)
 ```
 
 Data flows through five stages per log type:
@@ -58,8 +58,9 @@ breaks from HTML block elements while collapsing source-formatting whitespace.
 **This stage runs on the field table before it is saved to CSV and before name_map is built.**
 
 For each row:
-- If `Variable Name` is **non-empty**: apply `token_corrections` lookup (fixes typos/truncations in PA parentheticals)
-- If `Variable Name` is **empty**: extract the long field name (text before the first `(`), then look up in `global_name_overrides` (fills Audit_Log's fields that have no parenthetical in PA docs)
+
+- If `Variable Name` is **non-empty**: apply `token_corrections` lookup (fixes typos/truncations in PAN-OS parentheticals)
+- If `Variable Name` is **empty**: extract the long field name (text before the first `(`), then look up in `global_name_overrides` (fills Audit_Log's fields that have no parenthetical in PAN-OS docs)
 
 The corrected DataFrame is what gets saved to `*_fields.csv` and what feeds Stage 4.
 
@@ -74,6 +75,7 @@ have no matching parenthetical anywhere in the field table.
 ### Stage 5 — `_transform_format_string(format_string, name_map)` + `_apply_per_log_corrections(items, log_type_name)`
 
 `_transform_format_string` splits the format string on commas and for each token:
+
 1. Handles `Device Group Hierarchy Level N` via a dedicated regex → `dg_hier_level_N`
 2. Tries direct match, normalized match, and lowercase match against `name_map`
 3. Falls back to the original token (e.g. `FUTURE_USE`) if no match found
@@ -84,6 +86,7 @@ All other name mismatches (including `"Protocol"` → `proto`) are handled via
 `global_name_overrides` in `paloalto_scraper_exceptions.yaml`.
 
 `_apply_per_log_corrections` applies position-based fixes last:
+
 - `strip_leading_future_use`: removes position 0 if it is `FUTURE_USE` (currently disabled)
 - `new`: replaces the token at a given position with a specific value
 - `split_into`: expands a single token at a given position into a list of tokens
@@ -112,7 +115,7 @@ and the reason for each new entry.
 
 ### Token correction (typo in Variable Name parenthetical)
 
-The PA field table has a wrong or truncated variable name in parentheses.
+The PAN-OS field table has a wrong or truncated variable name in parentheses.
 
 ```yaml
 token_corrections:
@@ -121,9 +124,9 @@ token_corrections:
 
 This is applied to both `*_fields.csv` Variable Name column and the transformed format string.
 
-### Missing variable name (field has no parenthetical in PA docs)
+### Missing variable name (field has no parenthetical in PAN-OS docs)
 
-The PA field table row has no `(variable_name)` in the Field Name column.
+The PAN-OS field table row has no `(variable_name)` in the Field Name column.
 
 ```yaml
 global_name_overrides:
@@ -176,7 +179,7 @@ before per-log corrections run, so all positions shift down by 1.
 | `settings.output_dir` | `"."` | Root output directory |
 | `versions[].name` | — | Version label used as output directory name |
 | `versions[].log_types[].name` | — | Log type name used as filename prefix |
-| `versions[].log_types[].url` | — | PA docs URL to scrape |
+| `versions[].log_types[].url` | — | PAN-OS docs URL to scrape |
 
 `paloalto_scraper_exceptions.yaml`:
 
