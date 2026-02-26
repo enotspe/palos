@@ -123,23 +123,25 @@ Some corrections are position-based and specific to one log type — either a PA
 bug that breaks parsing, or a case where auto-detection produces the wrong result at a specific
 field position that cannot be fixed by a simple token or name override.
 
-### GlobalProtect_Log — Serial field collision at position 1
+### GlobalProtect_Log — Serial field collision
 
 PAN-OS's GlobalProtect field table contains two serial-related rows:
 
-| Row | Field Name | PAN-OS docs value | Variable Name |
-|---|---|---|---|
-| 2 | Serial # (serial) | `serial` | `serial` ✅ |
-| 19 | Serial Number (serialnumber) | `serialnumber` | `serialnumber` ✅ |
+| Field Name | PAN-OS docs value | Variable Name |
+|---|---|---|
+| Serial # (serial) | `serial` | `serial` ✅ |
+| Serial Number (serialnumber) | `serialnumber` | `serialnumber` ✅ |
 
-The format string position 1 maps to the "Serial #" field (the firewall's own serial number),
-which correctly resolves to `serial`. However, PAN-OS's raw field table parenthetical at that
-position reads `serialnumber` (the same string as the unrelated row 19 field).
+The format string has `"Serial Number"` at two positions: the firewall's own serial number
+(should be `serial`) and the machine's serial number (should be `serialnumber`). Both
+auto-map to `serialnumber` via the `Serial Number (serialnumber)` field table row. The
+`Serial # (serial)` row is not matched because the format string token is `"Serial Number"`,
+not `"Serial #"`.
 
 Correction: `match: "serialnumber"` with `new: "serial"` replaces the first occurrence of
-`serialnumber` in the transformed list (always position 1, the Serial # field) while leaving
-position 19's `serialnumber` (Serial Number — a different field) untouched. `match`
-(value-based, first occurrence) is used rather than `position` so the fix is independent of
+`serialnumber` in the transformed list (the firewall serial position) while leaving the
+second occurrence (`Serial Number — machine serial`) untouched. `match` (value-based, first
+occurrence) is used rather than `position` so the fix is independent of
 `strip_leading_future_use` and upstream field additions.
 
 ### Correlated_Events_Log — Period instead of comma (PAN-OS docs literal bug)
