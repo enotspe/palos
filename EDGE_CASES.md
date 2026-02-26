@@ -84,33 +84,33 @@ for a specific reason documented in the Root Cause column below.
 
 | Field Name (in *_fields.csv) | Long name in format string | Mapped to | Affected log types | Root Cause |
 |---|---|---|---|---|
-| Threat/Content Name (threatid) | "Threat ID" | `threatid` | Threat, URL Filtering, Data Filtering | Format string name differs from field table name |
-| Source Country (srcloc) | "Source Location" | `srcloc` | Threat, URL Filtering | Format string name differs from field table name |
-| Destination Country (dstloc) | "Destination Location" | `dstloc` | Threat, URL Filtering | Format string name differs from field table name |
-| *(absent from field table)* | "Parent Start Time" | `parent_start_time` | Threat, URL Filtering, Data Filtering | Field not documented in these log types' field tables |
-| PCAP ID (pcap_id) | "PCAP_ID" | `pcap_id` | Threat, URL Filtering, Data Filtering | Format string uses underscore; field table uses space |
-| Threat/Content Type (subtype) | "Subtype" | `subtype` | IP-Tag, GlobalProtect, Auth, Decryption | Format string name differs from field table name |
-| Serial Number (serial) | "Serial" | `serial` | IP-Tag | Format string name differs from field table name |
-| Certificate Fingerprint (fingerprint) | "Fingerprint" | `fingerprint` | GlobalProtect | Format string name differs from field table name |
-| IPv6 System Address (srcipv6) | "IPv6 Source Address" | `srcipv6` | HIP Match | Format string name differs from field table name |
-| High Resolution Timestamp (high_res_timestamp) | "High Res Timestamp" | `high_res_timestamp` | GlobalProtect | Format string abbreviates field table name |
-| Gateway Selection Method (selection_type) | "Selection Type" | `selection_type` | GlobalProtect | Format string name differs from field table name |
-| SSL Response Time (response_time) | "Response Time" | `response_time` | GlobalProtect | Format string name differs from field table name |
-| Gateway Priority (priority) | "Priority" | `priority` | GlobalProtect | Format string name differs from field table name |
-| Gateway Name (gateway) | "Gateway" | `gateway` | GlobalProtect | Format string name differs from field table name |
-| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Tunnel Inspection | Format string has "/IMSI" suffix absent from field table name |
-| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Tunnel Inspection | Format string has "/IMEI" suffix absent from field table name |
-| Tunnel Type (tunnel) | "Tunnel" | `tunnel` | Tunnel Inspection | Format string name differs from field table name |
-| Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel Inspection | Format string name differs from field table name |
-| Security Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Tunnel Inspection | Format string name differs from field table name |
-| Dynamic User Group Name (dynusergroup_name) | "Dynamic User Group" | `dynusergroup_name` | Tunnel Inspection | Format string name differs from field table name |
-| *(absent from field table)* | "Threat/Content Type" | `subtype` | Decryption | Field not documented in Decryption field table |
-| Issuer Common Name (issuer_cn) | "Issuer Subject Common Name" | `issuer_cn` | Decryption | Format string name differs from field table name |
-| Root Common Name (root_cn) | "Root Subject Common Name" | `root_cn` | Decryption | Format string name differs from field table name |
-| Server Name Indication(sni) | "Server Name Indication" | `sni` | Decryption | Malformed parenthetical (no space before `(`) — regex fails to extract variable name |
-| End IP Address (end_ip_adr) | "End User IP Address" | `end_ip_adr` | GTP | Format string name differs from field table name |
-| Serving Network MCC (mcc) | "Serving Country MCC" | `mcc` | GTP | Format string name differs from field table name |
-| Tunnel Inspection Rule(tunnel_insp_rule) | "Tunnel Inspection Rule" | `tunnel_insp_rule` | GTP | Malformed parenthetical (no space before `(`) — regex fails to extract variable name |
+| Threat/Content Name (threatid) | "Threat ID" | `threatid` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Format string name differs from field table name |
+| Source Country (srcloc) | "Source Location" | `srcloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
+| Destination Country (dstloc) | "Destination Location" | `dstloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
+| *(absent from field table)* | "Parent Start Time" | `parent_start_time` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Field absent from most of these log types' field tables |
+| PCAP ID (pcap_id) | "PCAP_ID" | `pcap_id` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Format string uses underscore; field table uses space |
+| Threat/Content Type (subtype) | "Subtype" | `subtype` | Config_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
+| Serial Number (serial) | "Serial" | `serial` | IP_Tag_Log | Format string name differs from field table name |
+| Certificate Fingerprint (fingerprint) | "Fingerprint" | `fingerprint` | Decryption_Log | Format string name differs from field table name |
+| IPv6 System Address (srcipv6) | "IPv6 Source Address" | `srcipv6` | HIP_Match_Log | Format string name differs from field table name |
+| High Resolution Timestamp (high_res_timestamp) | "High Res Timestamp" | `high_res_timestamp` | Decryption_Log, GlobalProtect_Log | Format string abbreviates field table name |
+| Gateway Selection Method (selection_type) | "Selection Type" | `selection_type` | GlobalProtect_Log | Format string name differs from field table name |
+| SSL Response Time (response_time) | "Response Time" | `response_time` | GlobalProtect_Log | Format string name differs from field table name |
+| Gateway Priority (priority) | "Priority" | `priority` | GlobalProtect_Log | Format string name differs from field table name |
+| Gateway Name (gateway) | "Gateway" | `gateway` | GlobalProtect_Log | Format string name differs from field table name |
+| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Data_Filtering_Log, GTP_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string has "/IMSI" suffix absent from field table name |
+| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Data_Filtering_Log, GTP_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string has "/IMEI" suffix absent from field table name |
+| Tunnel Type (tunnel) | "Tunnel" | `tunnel` | Decryption_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
+| Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Format string name differs from field table name |
+| Security Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string name differs from field table name |
+| Dynamic User Group Name (dynusergroup_name) | "Dynamic User Group" | `dynusergroup_name` | Tunnel_Inspection_Log | Format string name differs from field table name |
+| *(absent from field table)* | "Threat/Content Type" | `subtype` | Audit_Log, Authentication_Log, Data_Filtering_Log, Decryption_Log, GTP_Log, GlobalProtect_Log, HIP_Match_Log, IP_Tag_Log, Threat_Log, Traffic_Log, URL_Filtering_Log, User_ID_Log | Field absent from Decryption field table; override applied globally to all log types using this token |
+| Issuer Common Name (issuer_cn) | "Issuer Subject Common Name" | `issuer_cn` | Decryption_Log | Format string name differs from field table name |
+| Root Common Name (root_cn) | "Root Subject Common Name" | `root_cn` | Decryption_Log | Format string name differs from field table name |
+| Server Name Indication(sni) | "Server Name Indication" | `sni` | Decryption_Log | Malformed parenthetical (no space before `(`) — regex fails to extract variable name |
+| End IP Address (end_ip_adr) | "End User IP Address" | `end_ip_adr` | GTP_Log | Format string name differs from field table name |
+| Serving Network MCC (mcc) | "Serving Country MCC" | `mcc` | GTP_Log | Format string name differs from field table name |
+| Tunnel Inspection Rule(tunnel_insp_rule) | "Tunnel Inspection Rule" | `tunnel_insp_rule` | GTP_Log, Tunnel_Inspection_Log | Malformed parenthetical (no space before `(`) — regex fails to extract variable name |
 
 ---
 
