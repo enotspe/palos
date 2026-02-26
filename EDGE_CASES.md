@@ -101,8 +101,8 @@ for a specific reason documented in the Root Cause column below.
 | SSL Response Time (response_time) | "Response Time" | `response_time` | GlobalProtect_Log | Format string name differs from field table name |
 | Gateway Priority (priority) | "Priority" | `priority` | GlobalProtect_Log | Format string name differs from field table name |
 | Gateway Name (gateway) | "Gateway" | `gateway` | GlobalProtect_Log | Format string name differs from field table name |
-| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Data_Filtering_Log, GTP_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string has "/IMSI" suffix absent from field table name |
-| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Data_Filtering_Log, GTP_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string has "/IMEI" suffix absent from field table name |
+| Tunnel ID (tunnelid) | "Tunnel ID/IMSI" | `tunnelid` | Tunnel_Inspection_Log | Field table lacks `/IMSI` suffix; auto-detection fails. Other log types auto-detect correctly: Traffic/Threat/URL/Data → `tunnel_id/imsi`, GTP → `imsi`. Handled by token_corrections fallback (fires only when auto-detection leaves the long name unmapped). |
+| Monitor Tag (monitortag) | "Monitor Tag/IMEI" | `monitortag` | Tunnel_Inspection_Log | Field table lacks `/IMEI` suffix; auto-detection fails. Other log types auto-detect correctly: Traffic/Threat/URL/Data → `monitortag/imei`, GTP → `imei`. Handled by token_corrections fallback. |
 | Tunnel Type (tunnel) | "Tunnel" | `tunnel` | Decryption_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
 | Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Format string name differs from field table name |
 | Security Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string name differs from field table name |

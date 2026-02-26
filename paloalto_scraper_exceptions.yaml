@@ -53,8 +53,6 @@ global_name_overrides:
   "Device Group Hierarchy 4": "dg_hier_level_4"
 
   # Tunnel Inspection — unmapped long names
-  "Tunnel ID/IMSI": "tunnelid"
-  "Monitor Tag/IMEI": "monitortag"
   "Tunnel": "tunnel"
   "Strict Check": "strict_check"
   "Rule UUID": "rule_uuid"
@@ -94,7 +92,17 @@ token_corrections:
   "FUTURE_USER": "FUTURE_USE" # User-ID log: typo in PA docs field table
   "high_res": "high_res_timestamp" # IP-Tag, User-ID, Auth, URL, Threat, etc.: truncated in PA field table
   "event_id": "eventid" # IP-Tag: underscore wrong in PA field table
-  "tunnelid/imsi": "tunnel_id/imsi" # Traffic: PA field table lists without underscore first
+  "tunnelid/imsi": "tunnel_id/imsi" # Traffic: PA field table lists without underscore (tunnelid/imsi); correct form adds underscore
+  # Tunnel_Inspection_Log only: its field table has "Tunnel ID (tunnelid)" / "Monitor Tag (monitortag)"
+  # without the /IMSI or /IMEI suffix. Two corrections are needed:
+  #   1. Format string: "Tunnel ID/IMSI" / "Monitor Tag/IMEI" fail auto-detection and remain as
+  #      raw long names — caught here and mapped to tunnel_id/imsi / monitortag/imei.
+  #   2. Fields CSV: parentheticals produce "tunnelid" / "monitortag" — corrected here to match.
+  # All other log types auto-detect correctly from their field tables.
+  "Tunnel ID/IMSI": "tunnel_id/imsi"
+  "Monitor Tag/IMEI": "monitortag/imei"
+  "tunnelid": "tunnel_id/imsi"
+  "monitortag": "monitortag/imei"
   "nsdsai_sst": "nssai_sst" # GTP: "nsdsai" → "nssai" typo in PA docs
   "nsdsai_sd": "nssai_sd" # GTP: same typo
 
