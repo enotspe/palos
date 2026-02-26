@@ -21,7 +21,7 @@ Output lands in version-named subdirectories (e.g. `11.1+/`) in the current work
 {version}/
   {LogType}_format.csv        # 2 lines: original format string, then variable-name format
   {LogType}_fields.csv        # Field Name, Variable Name, Description (+ any extra cols)
-panos_syslog_fields.csv       # Consolidated matrix: position × log type (coming soon)
+  panos_syslog_fields.csv     # Consolidated matrix: rows = positions, columns = log types
 ```
 
 **`{LogType}_format.csv`** — line 1 is the raw comma-separated format string exactly as PAN-OS

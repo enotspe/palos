@@ -10,6 +10,7 @@ Requirements:
     pip install requests beautifulsoup4 pandas lxml pyyaml
 """
 
+import csv
 import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
@@ -517,6 +518,65 @@ class PaloAltoLogScraper:
 
         return format_string is not None and field_table is not None
 
+    def _build_consolidated_matrix(self, version_dir: str, log_types: list) -> None:
+        """Build the consolidated position × log type matrix and save to panos_syslog_fields.csv.
+
+        Reads line 2 of each *_format.csv (the variable-name transformed line), aligns all
+        log types by position index, and writes the matrix with log type names as columns.
+        Log types whose format file is missing or has no transformed line are skipped with
+        a warning. Positions beyond a log type's last field are left empty.
+        """
+        columns = {}   # display_name → list of tokens
+        ordered_names = []
+
+        for log_type in log_types:
+            name = log_type['name']
+            format_path = os.path.join(version_dir, f"{name}_format.csv")
+
+            if not os.path.exists(format_path):
+                logger.warning(f"Matrix: no format file for {name}, skipping column")
+                continue
+
+            try:
+                with open(format_path, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+            except Exception as e:
+                logger.error(f"Matrix: cannot read {format_path}: {e}")
+                continue
+
+            if len(lines) < 2 or not lines[1].strip():
+                logger.warning(f"Matrix: {name}_format.csv has no transformed line 2, skipping column")
+                continue
+
+            try:
+                tokens = next(csv.reader([lines[1].strip()]))
+            except Exception as e:
+                logger.error(f"Matrix: cannot parse {name}_format.csv line 2: {e}")
+                continue
+
+            # Display name: strip _Log suffix, replace remaining underscores with spaces
+            display_name = re.sub(r'_Log$', '', name).replace('_', ' ')
+            ordered_names.append(display_name)
+            columns[display_name] = tokens
+
+        if not columns:
+            logger.warning("Matrix: no valid format files found, skipping panos_syslog_fields.csv")
+            return
+
+        max_len = max(len(v) for v in columns.values())
+        data = {n: columns[n] + [''] * (max_len - len(columns[n])) for n in ordered_names}
+
+        df = pd.DataFrame(data, columns=ordered_names)
+        matrix_path = os.path.join(version_dir, 'panos_syslog_fields.csv')
+        try:
+            df.to_csv(matrix_path, index=False)
+            logger.info(
+                f"Saved consolidated matrix to {matrix_path} "
+                f"({max_len} rows × {len(ordered_names)} columns)"
+            )
+        except Exception as e:
+            logger.error(f"Matrix: cannot save {matrix_path}: {e}")
+
     def scrape_version(self, version: dict) -> int:
         """
         Scrape all log types for a specific PAN-OS version
@@ -539,6 +599,8 @@ class PaloAltoLogScraper:
         for log_type in version['log_types']:
             if self.scrape_log_type(log_type, version_dir):
                 successful_count += 1
+
+        self._build_consolidated_matrix(version_dir, version['log_types'])
 
         return successful_count
 
