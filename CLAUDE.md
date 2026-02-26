@@ -37,8 +37,8 @@ This is a single-file web scraper (`paloalto_scraper.py`) with a YAML config (`p
 ### Key methods
 - `extract_format_string()`: regex-based extraction of the `Format:` section from page text
 - `extract_field_table()`: finds HTML tables with "field name" header, parses with BS4, adds `Variable Name` column
-- `_apply_field_table_corrections()`: post-processes the field table's Variable Name column — applies `token_corrections` to non-empty names, fills empty names from `global_name_overrides` using the long field name
-- `_build_name_map()` + `_transform_format_string()`: replaces human-readable long names in the format string with snake_case variable names; the only hardcoded special case is `Device Group Hierarchy Level N` → `dg_hier_level_N` (regex); all other name mismatches are handled via `global_name_overrides`
+- `_apply_field_table_corrections()`: post-processes the field table's Variable Name column — applies `token_corrections` to non-empty names, fills empty names from `field_table_overrides` using the long field name
+- `_build_name_map()` + `_transform_format_string()`: replaces human-readable long names in the format string with snake_case variable names; the only hardcoded special case is `Device Group Hierarchy Level N` → `dg_hier_level_N` (regex); all other name mismatches are handled via `global_name_overrides`; fields with no parenthetical (filled by `field_table_overrides`) are also mapped via the full field name as key
 - `_get_cell_text_with_formatting()`: HTML→text that preserves intentional line breaks from block elements while collapsing source-formatting whitespace
 
 ### Config settings

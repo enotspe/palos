@@ -67,6 +67,7 @@ class PaloAltoLogScraper:
         # Load exceptions/corrections file
         exceptions = self._load_config('paloalto_scraper_exceptions.yaml', label='exceptions')
         self.global_name_overrides = exceptions.get('global_name_overrides', {})
+        self.field_table_overrides = exceptions.get('field_table_overrides', {})
         self.token_corrections = exceptions.get('token_corrections', {})
         self.per_log_corrections = exceptions.get('per_log_corrections', {})
         self.strip_leading_future_use = config.get('settings', {}).get('strip_leading_future_use', False)
@@ -76,6 +77,7 @@ class PaloAltoLogScraper:
         logger.info(f"Dry run mode: {self.dry_run}")
         logger.info(f"Strip leading FUTURE_USE: {self.strip_leading_future_use}")
         logger.info(f"Loaded {len(self.global_name_overrides)} global name overrides, "
+                    f"{len(self.field_table_overrides)} field table overrides, "
                     f"{len(self.token_corrections)} token corrections, "
                     f"{len(self.per_log_corrections)} per-log correction entries")
 
@@ -257,7 +259,7 @@ class PaloAltoLogScraper:
             else:
                 match = re.match(r"^(.+?)\s+\(", field_name)
                 long_name = match.group(1).strip() if match else field_name.strip()
-                corrected_names.append(self.global_name_overrides.get(long_name, ""))
+                corrected_names.append(self.field_table_overrides.get(long_name, ""))
 
         field_table = field_table.copy()
         field_table['Variable Name'] = corrected_names
@@ -284,6 +286,13 @@ class PaloAltoLogScraper:
                 if normalized != long_name:
                     name_map[normalized] = var_name
                 name_map[normalized.lower()] = var_name
+            else:
+                # No parenthetical: use the full field name as key.
+                # Handles fields whose Variable Name was filled by field_table_overrides
+                # (e.g. Audit_Log fields that have no parenthetical in PA docs).
+                long_name = re.sub(r'\s+', ' ', field_name).strip()
+                name_map[long_name] = var_name
+                name_map[long_name.lower()] = var_name
 
         # Global overrides take precedence over auto-detected mappings
         name_map.update(self.global_name_overrides)

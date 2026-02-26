@@ -1,6 +1,6 @@
 Traffic,Threat,URL Filtering,Data Filtering,HIP Match,GlobalProtect,IP Tag,User ID,Decryption,Tunnel Inspection,SCTP,Authentication,Config,System,Correlated Events,GTP,Audit
 FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,serial
-receive_time,receive_time,receive_time,receive_time,receive_time,serial,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,time_generated
+receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,receive_time,time_generated
 serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,serial,subtype
 type,type,type,type,type,type,type,type,type,type,type,type,type,type,type,type,FUTURE_USE
 subtype,subtype,subtype,subtype,subtype,subtype,subtype,subtype,subtype,subtype,FUTURE_USE,subtype,subtype,subtype,subtype,subtype,eventid
@@ -19,7 +19,7 @@ from,from,from,from,FUTURE_USE,public_ipv6,seqno,datasource,from,from,from,logse
 to,to,to,to,seqno,private_ip,actionflags,datasourcetype,to,to,to,serverprofile,actionflags,dg_hier_level_1,device_name,to,
 inbound_if,inbound_if,inbound_if,inbound_if,actionflags,private_ipv6,dg_hier_level_1,seqno,inbound_if,inbound_if,inbound_if,desc,dg_hier_level_1,dg_hier_level_2,vsys_id,inbound_if,
 outbound_if,outbound_if,outbound_if,outbound_if,dg_hier_level_1,hostid,dg_hier_level_2,actionflags,outbound_if,outbound_if,outbound_if,clienttype,dg_hier_level_2,dg_hier_level_3,objectname,outbound_if,
-logset,logset,logset,logset,dg_hier_level_2,serial,dg_hier_level_3,dg_hier_level_1,logset,logset,logset,event,dg_hier_level_3,dg_hier_level_4,object_id,logset,
+logset,logset,logset,logset,dg_hier_level_2,serialnumber,dg_hier_level_3,dg_hier_level_1,logset,logset,logset,event,dg_hier_level_3,dg_hier_level_4,object_id,logset,
 FUTURE_USE,FUTURE_USE,FUTURE_USE,FUTURE_USE,dg_hier_level_3,client_ver,dg_hier_level_4,dg_hier_level_2,time_received,FUTURE_USE,FUTURE_USE,factorno,dg_hier_level_4,vsys_name,evidence,FUTURE_USE,
 sessionid,sessionid,sessionid,sessionid,dg_hier_level_4,client_os,vsys_name,dg_hier_level_3,sessionid,sessionid,sessionid,seqno,vsys_name,device_name,,sessionid,
 repeatcnt,repeatcnt,repeatcnt,repeatcnt,vsys_name,client_os_ver,device_name,dg_hier_level_4,repeatcnt,repeatcnt,repeatcnt,actionflags,device_name,FUTURE_USE,,FUTURE_USE,

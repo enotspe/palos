@@ -71,9 +71,17 @@ global_name_overrides:
   "Serving Country MCC": "mcc"
   "Tunnel Inspection Rule": "tunnel_insp_rule"
 
+# field_table_overrides: used ONLY to fill empty Variable Names in field tables
+# (fields whose PA docs Field Name has no parenthetical at all).
+# Keys are the long field name (text before the first "("), values are the correct variable name.
+# Cross-referenced from other log types whose field tables do include the parenthetical.
+# Unlike global_name_overrides, these are NOT merged into name_map and do NOT affect
+# format string transformation — they only fix the *_fields.csv Variable Name column.
+field_table_overrides:
   # Audit_Log — PA docs omit variable names from the field table for these fields;
   # names confirmed from System_Log and Config_Log field tables which do include them
   "Serial Number": "serial"
+  "Generate Time": "time_generated"
   "Event ID": "eventid"
   "Object": "object"
   "CLI Command": "cmd"
@@ -99,9 +107,11 @@ token_corrections:
 #   - split_into: replace the selected token with a list of tokens (expands length by len-1)
 per_log_corrections:
   GlobalProtect_Log:
-    # Device serial number: PA field table says "serialnumber" but actual syslog field is "serial".
-    # Position 19 also has "serialnumber" (a different field) and must NOT be changed.
-    - position: 1
+    # The format string has "Serial Number" at two positions: position 2 (firewall serial,
+    # should be "serial") and position 20 (machine serial, should be "serialnumber"). Both
+    # auto-map to "serialnumber" via the field table ("Serial Number (serialnumber)").
+    # match: finds the first occurrence (position 2) and replaces it; position 20 is untouched.
+    - match: "serialnumber"
       new: "serial"
 
   Correlated_Events_Log:

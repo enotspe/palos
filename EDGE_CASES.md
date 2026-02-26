@@ -33,13 +33,15 @@ output token in the transformed format string line.
 ## Layer 2 — Missing Variable Names (no parenthetical in PA docs)
 
 Some log types omit the parenthetical variable name from their field table entirely. PALOS
-fills these from `global_name_overrides`, using the long field name as the lookup key. Values
+fills these from `field_table_overrides`, using the long field name as the lookup key. Values
 are cross-referenced from other log types (System_Log, Config_Log) that do include the
-parenthetical for the same field.
+parenthetical for the same field. These entries also feed into format string transformation
+via `_build_name_map`'s no-parenthetical branch, without affecting other log types.
 
 | Log Type | Field Name | PAN-OS docs value | Variable Name | Notes |
 |---|---|---|---|---|
 | Audit_Log | Serial Number | *(empty)* | `serial` | Cross-referenced from System_Log / Config_Log field tables |
+| Audit_Log | Generate Time | *(empty)* | `time_generated` | Cross-referenced from other log types |
 | Audit_Log | Event ID | *(empty)* | `eventid` | Cross-referenced from System_Log field table |
 | Audit_Log | Object | *(empty)* | `object` | Cross-referenced from Config_Log field table |
 | Audit_Log | CLI Command | *(empty)* | `cmd` | Cross-referenced from Config_Log field table |
@@ -132,9 +134,13 @@ PAN-OS's GlobalProtect field table contains two serial-related rows:
 
 The format string position 1 maps to the "Serial #" field (the firewall's own serial number),
 which correctly resolves to `serial`. However, PAN-OS's raw field table parenthetical at that
-position reads `serialnumber` (the same string as the unrelated row 19 field). The
-`per_log_corrections` rule replaces position 1 with `serial` to fix this collision without
-affecting position 19's `serialnumber` (a different field — the machine's serial number).
+position reads `serialnumber` (the same string as the unrelated row 19 field).
+
+Correction: `match: "serialnumber"` with `new: "serial"` replaces the first occurrence of
+`serialnumber` in the transformed list (always position 1, the Serial # field) while leaving
+position 19's `serialnumber` (Serial Number — a different field) untouched. `match`
+(value-based, first occurrence) is used rather than `position` so the fix is independent of
+`strip_leading_future_use` and upstream field additions.
 
 ### Correlated_Events_Log — Period instead of comma (PAN-OS docs literal bug)
 

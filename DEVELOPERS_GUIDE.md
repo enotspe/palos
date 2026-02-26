@@ -60,17 +60,19 @@ breaks from HTML block elements while collapsing source-formatting whitespace.
 For each row:
 
 - If `Variable Name` is **non-empty**: apply `token_corrections` lookup (fixes typos/truncations in PAN-OS parentheticals)
-- If `Variable Name` is **empty**: extract the long field name (text before the first `(`), then look up in `global_name_overrides` (fills Audit_Log's fields that have no parenthetical in PAN-OS docs)
+- If `Variable Name` is **empty**: extract the long field name (text before the first `(`), then look up in `field_table_overrides` (fills Audit_Log's fields that have no parenthetical in PAN-OS docs)
 
 The corrected DataFrame is what gets saved to `*_fields.csv` and what feeds Stage 4.
 
 ### Stage 4 — `_build_name_map(field_table)`
 
 Builds a `{long_name: variable_name}` dictionary from the (now corrected) field table.
-For each row, the text before the `(` becomes the key in three forms: original, normalized
-whitespace, and lowercase. Finally, `global_name_overrides` is merged in with precedence
-over auto-detected mappings. This handles long names that appear in the format string but
-have no matching parenthetical anywhere in the field table.
+For rows **with** a parenthetical, the text before the `(` becomes the key in three forms:
+original, normalized whitespace, and lowercase. For rows **without** a parenthetical (e.g.
+Audit_Log fields filled by `field_table_overrides`), the full field name is used as the key
+directly — this ensures those Variable Names feed into format string transformation without
+needing a separate `global_name_overrides` entry. Finally, `global_name_overrides` is merged
+in with precedence over auto-detected mappings.
 
 ### Stage 5 — `_transform_format_string(format_string, name_map)` + `_apply_per_log_corrections(items, log_type_name)`
 
@@ -101,8 +103,8 @@ All other name mismatches (including `"Protocol"` → `proto`) are handled via
 | `extract_format_string(soup)` | Regex-extracts the `Format:` section from page text | Multi-line format strings via `DOTALL` flag |
 | `extract_field_table(soup)` | Finds table with "field name" header, returns DataFrame with Variable Name column | Tables that match by substring ("field" or "field name") |
 | `_extract_variable_name(field_name)` | Pulls first word from parenthetical | "x or y" in parenthetical → takes only first word; no parenthetical → returns `""` |
-| `_apply_field_table_corrections(field_table)` | Corrects Variable Name column in field table | token_corrections for non-empty; global_name_overrides for empty |
-| `_build_name_map(field_table)` | Builds `{long_name: var_name}` dict | Three key forms per entry (original, normalized, lowercase); global_name_overrides wins |
+| `_apply_field_table_corrections(field_table)` | Corrects Variable Name column in field table | token_corrections for non-empty; field_table_overrides for empty |
+| `_build_name_map(field_table)` | Builds `{long_name: var_name}` dict | Parenthetical rows: three key forms; no-parenthetical rows: full field name as key; global_name_overrides wins |
 | `_transform_format_string(format_string, name_map)` | Replaces long names with variable names | DG hierarchy regex; Protocol special case; token_corrections on all outputs |
 | `_apply_per_log_corrections(items, log_type_name)` | Position- or value-based fixes per log type | `match` key for value-based lookup; `position` for index-based; bounds checked |
 | `_get_cell_text_with_formatting(cell)` | HTML cell → text preserving intentional line breaks | Block elements get `\n`; source whitespace collapsed |
@@ -130,12 +132,15 @@ This is applied to both `*_fields.csv` Variable Name column and the transformed 
 The PAN-OS field table row has no `(variable_name)` in the Field Name column.
 
 ```yaml
-global_name_overrides:
+field_table_overrides:
   "Long Field Name": "variable_name"  # LogType: cross-referenced from OtherLog
 ```
 
 Use the exact long field name string as the key. Cross-reference the correct variable name
 from another log type's field table that does have the parenthetical for the same field.
+`field_table_overrides` fills the `*_fields.csv` Variable Name column **and** feeds into
+format string transformation (via `_build_name_map`'s no-parenthetical branch), but does
+**not** affect other log types' name maps.
 
 ### Long name not auto-mapped from format string
 
@@ -205,6 +210,7 @@ A warning is logged and the correction is skipped if the match value is not foun
 | Key | Effect |
 |-----|--------|
 | `global_name_overrides` | Merged into name_map; takes precedence over auto-detected mappings |
+| `field_table_overrides` | Fills empty Variable Names in field tables only (fields with no parenthetical in PA docs) |
 | `token_corrections` | Applied to Variable Name column and to all output format tokens |
 | `per_log_corrections` | Position- or value-based corrections keyed by log type name |
 
