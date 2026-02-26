@@ -85,11 +85,12 @@ The `Device Group Hierarchy Level N` regex is the only hardcoded special case re
 All other name mismatches (including `"Protocol"` → `proto`) are handled via
 `global_name_overrides` in `paloalto_scraper_exceptions.yaml`.
 
-`_apply_per_log_corrections` applies position-based fixes last:
+`_apply_per_log_corrections` applies position- or value-based fixes last:
 
 - `strip_leading_future_use`: removes position 0 if it is `FUTURE_USE` (currently disabled)
-- `new`: replaces the token at a given position with a specific value
-- `split_into`: expands a single token at a given position into a list of tokens
+- `match`: locates the token by value (position-independent); `position` is the fallback
+- `new`: replaces the selected token with a specific value
+- `split_into`: expands the selected token into a list of tokens
 
 ---
 
@@ -103,7 +104,7 @@ All other name mismatches (including `"Protocol"` → `proto`) are handled via
 | `_apply_field_table_corrections(field_table)` | Corrects Variable Name column in field table | token_corrections for non-empty; global_name_overrides for empty |
 | `_build_name_map(field_table)` | Builds `{long_name: var_name}` dict | Three key forms per entry (original, normalized, lowercase); global_name_overrides wins |
 | `_transform_format_string(format_string, name_map)` | Replaces long names with variable names | DG hierarchy regex; Protocol special case; token_corrections on all outputs |
-| `_apply_per_log_corrections(items, log_type_name)` | Position-based fixes for specific log types | strip, new, split_into |
+| `_apply_per_log_corrections(items, log_type_name)` | Position- or value-based fixes per log type | `match` key for value-based lookup; `position` for index-based; bounds checked |
 | `_get_cell_text_with_formatting(cell)` | HTML cell → text preserving intentional line breaks | Block elements get `\n`; source whitespace collapsed |
 
 ---
@@ -165,6 +166,23 @@ per_log_corrections:
 Note: if `strip_leading_future_use: true`, the original position 0 (`FUTURE_USE`) is removed
 before per-log corrections run, so all positions shift down by 1.
 
+### Value-based fix (token identified by content, not index)
+
+Use `match` instead of `position` when the target token has a known distinctive value
+and its index is not stable (e.g. it shifts depending on `strip_leading_future_use`):
+
+```yaml
+per_log_corrections:
+  LogType_Name:
+    - match: "Exact token value in transformed list"
+      split_into: ["token_a", "token_b"]   # expand into multiple tokens
+      # OR
+      new: "correct_value"                 # replace with a single token
+```
+
+A warning is logged and the correction is skipped if the match value is not found.
+`match` takes precedence over `position` if both keys are present.
+
 ---
 
 ## Configuration Reference
@@ -177,6 +195,7 @@ before per-log corrections run, so all positions shift down by 1.
 | `settings.force_rescrape` | `false` | Skip existing version dirs unless true |
 | `settings.dry_run` | `false` | Print scrape plan without fetching |
 | `settings.output_dir` | `"."` | Root output directory |
+| `settings.strip_leading_future_use` | `false` | If true, removes leading `FUTURE_USE` from all format strings |
 | `versions[].name` | — | Version label used as output directory name |
 | `versions[].log_types[].name` | — | Log type name used as filename prefix |
 | `versions[].log_types[].url` | — | PAN-OS docs URL to scrape |
@@ -185,10 +204,9 @@ before per-log corrections run, so all positions shift down by 1.
 
 | Key | Effect |
 |-----|--------|
-| `strip_leading_future_use` | If true, removes leading `FUTURE_USE` from all format strings |
 | `global_name_overrides` | Merged into name_map; takes precedence over auto-detected mappings |
 | `token_corrections` | Applied to Variable Name column and to all output format tokens |
-| `per_log_corrections` | Position-based corrections keyed by log type name |
+| `per_log_corrections` | Position- or value-based corrections keyed by log type name |
 
 ---
 

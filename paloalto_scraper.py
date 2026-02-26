@@ -68,7 +68,7 @@ class PaloAltoLogScraper:
         self.global_name_overrides = exceptions.get('global_name_overrides', {})
         self.token_corrections = exceptions.get('token_corrections', {})
         self.per_log_corrections = exceptions.get('per_log_corrections', {})
-        self.strip_leading_future_use = exceptions.get('strip_leading_future_use', False)
+        self.strip_leading_future_use = config.get('settings', {}).get('strip_leading_future_use', False)
 
         logger.info(f"Loaded {len(self.versions)} versions from main config")
         logger.info(f"Force rescrape: {self.force_rescrape}")
@@ -320,18 +320,36 @@ class PaloAltoLogScraper:
         return new_items
 
     def _apply_per_log_corrections(self, items: list, log_type_name: str) -> list:
-        """Apply strip and position-based corrections for a specific log type."""
+        """Apply strip and position- or value-based corrections for a specific log type."""
         if self.strip_leading_future_use and items and items[0] == "FUTURE_USE":
             items = items[1:]
 
         for correction in self.per_log_corrections.get(log_type_name, []):
-            pos = correction['position']
-            if pos < 0 or pos >= len(items):
+            if 'match' in correction:
+                target = correction['match']
+                try:
+                    pos = items.index(target)
+                except ValueError:
+                    logger.warning(
+                        f"Per-log correction for {log_type_name}: "
+                        f"match '{target}' not found in items; skipping."
+                    )
+                    continue
+            elif 'position' in correction:
+                pos = correction['position']
+                if pos < 0 or pos >= len(items):
+                    logger.warning(
+                        f"Per-log correction for {log_type_name} has out-of-bounds "
+                        f"position {pos} (list length {len(items)}); skipping."
+                    )
+                    continue
+            else:
                 logger.warning(
-                    f"Per-log correction for {log_type_name} has out-of-bounds position {pos} "
-                    f"(list length {len(items)}); skipping."
+                    f"Per-log correction for {log_type_name} has neither "
+                    f"'position' nor 'match' key; skipping."
                 )
                 continue
+
             if 'new' in correction:
                 items[pos] = correction['new']
             elif 'split_into' in correction:

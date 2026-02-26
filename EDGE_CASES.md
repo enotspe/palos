@@ -145,6 +145,8 @@ in the Correlated Events format string, producing the single token:
 "Source Address. Source User"
 ```
 
-This is a literal bug in the PAN-OS documentation page — not a PALOS parsing issue. The
-`split_into` correction at position 6 expands this single malformed token back into two
-correct tokens: `src`, `srcuser`.
+This is a literal bug in the PAN-OS documentation page — not a PALOS parsing issue.
+Correction: `match: "Source Address. Source User"` with `split_into: ["src", "srcuser"]`
+expands the single malformed token back into two correct tokens. `match` (value-based)
+is used rather than `position` (index-based) so the fix is independent of
+`strip_leading_future_use` and upstream field additions.

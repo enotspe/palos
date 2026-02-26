@@ -6,10 +6,6 @@
 #   - The scraper's name-mapping logic misses some long-name → variable-name lookups
 #   - One PA doc page has a literal bug (period instead of comma as separator)
 
-# Strip leading FUTURE_USE from all format strings (PA docs always start with it,
-# but it is not a real syslog field)
-strip_leading_future_use: false
-
 # global_name_overrides: merged into name_map before format string transformation.
 # Keys are long field names (as they appear in the format string), values are variable names.
 # These supplement and take precedence over auto-detected mappings from each log type's field table.
@@ -94,11 +90,13 @@ token_corrections:
   "nsdsai_sst": "nssai_sst" # GTP: "nsdsai" → "nssai" typo in PA docs
   "nsdsai_sd": "nssai_sd" # GTP: same typo
 
-# per_log_corrections: position-based corrections applied per log type,
-# AFTER strip_leading_future_use removes position 0.
-# Supports two correction types:
-#   - new: replace token at position with a new value
-#   - split_into: replace token at position with a list of tokens (expands length by len-1)
+# per_log_corrections: corrections applied per log type, AFTER strip_leading_future_use
+# removes position 0. Two selector types are supported:
+#   - match: locate token by value (position-independent; preferred when token value is known)
+#   - position: locate token by 0-indexed position (fallback when value is not distinctive)
+# Two correction types are supported:
+#   - new: replace the selected token with a new value
+#   - split_into: replace the selected token with a list of tokens (expands length by len-1)
 per_log_corrections:
   GlobalProtect_Log:
     # Device serial number: PA field table says "serialnumber" but actual syslog field is "serial".
@@ -107,9 +105,7 @@ per_log_corrections:
       new: "serial"
 
   Correlated_Events_Log:
-    # PA docs bug: format string uses a period instead of a comma between "Source Address"
-    # and "Source User", causing the scraper to read them as one token:
-    # "Source Address. Source User" → must be split back into two fields.
-    # Position 6 = after stripping leading FUTURE_USE (original position 7 in raw format).
-    - position: 6
+    # PA docs bug: period instead of comma produces single token "Source Address. Source User".
+    # match: used instead of position: so the fix is independent of strip_leading_future_use.
+    - match: "Source Address. Source User"
       split_into: ["src", "srcuser"]
