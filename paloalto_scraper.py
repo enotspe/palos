@@ -11,15 +11,14 @@ Requirements:
 """
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 import os
 import time
-from urllib.parse import urljoin
 import re
 import logging
 import yaml
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,13 +34,13 @@ class PaloAltoLogScraper:
             base_delay: Base delay between requests in seconds (overrides config file if provided)
         """
         # Load configuration from file
-        config = self._load_config(config_file)
-        
+        config = self._load_config(config_file, label='main config')
+
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
-        
+
         # Use provided base_delay or fall back to config file value
         self.base_delay = base_delay if base_delay is not None else config.get('settings', {}).get('base_delay', 1.0)
 
@@ -53,90 +52,107 @@ class PaloAltoLogScraper:
         # Set output directory (defaults to current working directory)
         self.output_dir = config.get('settings', {}).get('output_dir', os.getcwd())
         os.makedirs(self.output_dir, exist_ok=True)
-        
+
         # Load force_rescrape and dry_run flags
         self.force_rescrape = config.get('settings', {}).get('force_rescrape', False)
         self.dry_run = config.get('settings', {}).get('dry_run', False)
 
+        # Configurable pause between versions (previously hardcoded to 2s)
+        self.inter_version_delay = config.get('settings', {}).get('inter_version_delay', 2.0)
+
+        # Max HTTP retry attempts per URL
+        self.max_retries = config.get('settings', {}).get('max_retries', 3)
+
         # Load exceptions/corrections file
-        exceptions = self._load_config('paloalto_scraper_exceptions.yaml')
+        exceptions = self._load_config('paloalto_scraper_exceptions.yaml', label='exceptions')
         self.global_name_overrides = exceptions.get('global_name_overrides', {})
         self.token_corrections = exceptions.get('token_corrections', {})
         self.per_log_corrections = exceptions.get('per_log_corrections', {})
         self.strip_leading_future_use = exceptions.get('strip_leading_future_use', False)
 
-        logger.info(f"Loaded {len(self.versions)} versions from configuration file")
+        logger.info(f"Loaded {len(self.versions)} versions from main config")
         logger.info(f"Force rescrape: {self.force_rescrape}")
         logger.info(f"Dry run mode: {self.dry_run}")
         logger.info(f"Strip leading FUTURE_USE: {self.strip_leading_future_use}")
         logger.info(f"Loaded {len(self.global_name_overrides)} global name overrides, "
                     f"{len(self.token_corrections)} token corrections, "
                     f"{len(self.per_log_corrections)} per-log correction entries")
-    
-    def _load_config(self, config_file: str) -> dict:
+
+    def _load_config(self, config_file: str, label: str = 'configuration') -> dict:
         """
         Load configuration from YAML file
-        
+
         Args:
             config_file: Path to the YAML configuration file
-            
+            label: Human-readable label for log messages (e.g. 'main config', 'exceptions')
+
         Returns:
             Dictionary containing configuration
         """
         # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(script_dir, config_file)
-        
+
         try:
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
-                logger.info(f"Successfully loaded configuration from {config_path}")
+                logger.info(f"Loaded {label} from {config_path}")
                 return config
         except FileNotFoundError:
-            logger.error(f"Configuration file not found: {config_path}")
+            logger.error(f"{label.capitalize()} file not found: {config_path}")
             raise
         except yaml.YAMLError as e:
-            logger.error(f"Error parsing YAML configuration: {e}")
+            logger.error(f"Error parsing {label} YAML: {e}")
             raise
-    
+
     def _version_exists(self, version: dict) -> bool:
         """
-        Check if a version has already been scraped
-        
+        Check if a version has already been scraped (fully).
+
+        A version is considered complete when the number of CSV files in its directory
+        is at least equal to the number of configured log types. Fewer files than that
+        indicates a partial/interrupted scrape that should be redone.
+
         Args:
             version: Version dictionary with 'name' and 'log_types' keys
-            
+
         Returns:
-            True if the version directory exists and contains files, False otherwise
+            True if the version directory appears complete, False otherwise
         """
         version_dir = self.get_version_directory(version['name'])
-        
-        # Check if the version directory exists and has files
+
         if os.path.exists(version_dir):
             files = [f for f in os.listdir(version_dir) if f.endswith('.csv')]
-            if files:
-                logger.info(f"Version {version['name']} already exists with {len(files)} files")
+            expected_min = len(version.get('log_types', []))
+            if len(files) >= expected_min:
+                logger.info(f"Version {version['name']} already complete ({len(files)} CSV files)")
                 return True
-        
+            elif files:
+                logger.warning(
+                    f"Version {version['name']} appears incomplete: "
+                    f"found {len(files)} CSV files, expected at least {expected_min}. "
+                    f"Will re-scrape."
+                )
+
         return False
-    
+
     def _get_versions_to_scrape(self) -> List[dict]:
         """
         Get the list of versions to scrape based on force_rescrape flag
-        
+
         Returns:
             List of version dictionaries to scrape
         """
         if self.force_rescrape:
             logger.info("Force rescrape enabled - will scrape all versions")
             return self.versions
-        
+
         # Filter out existing versions
         versions_to_scrape = [v for v in self.versions if not self._version_exists(v)]
-        
+
         existing_count = len(self.versions) - len(versions_to_scrape)
         logger.info(f"Found {existing_count} existing versions, {len(versions_to_scrape)} new versions to scrape")
-        
+
         return versions_to_scrape
 
     def get_version_directory(self, version_name: str) -> str:
@@ -153,51 +169,58 @@ class PaloAltoLogScraper:
 
     def get_page_content(self, url: str) -> Optional[BeautifulSoup]:
         """
-        Fetch and parse a web page
+        Fetch and parse a web page, retrying on transient failures.
 
         Args:
             url: URL to fetch
 
         Returns:
-            BeautifulSoup object or None if failed
+            BeautifulSoup object or None if all attempts failed
         """
-        try:
-            logger.info(f"Fetching: {url}")
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                attempt_label = f" (attempt {attempt}/{self.max_retries})" if attempt > 1 else ""
+                logger.info(f"Fetching: {url}{attempt_label}")
+                response = self.session.get(url, timeout=30)
+                response.raise_for_status()
 
-            # Rate limiting
-            time.sleep(self.base_delay)
+                # Rate limiting
+                time.sleep(self.base_delay)
 
-            return BeautifulSoup(response.content, 'html.parser')
+                return BeautifulSoup(response.content, 'html.parser')
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching {url}: {e}")
-            return None
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Error fetching {url} (attempt {attempt}/{self.max_retries}): {e}")
+                if attempt < self.max_retries:
+                    wait = self.base_delay * attempt
+                    logger.info(f"Retrying in {wait:.1f}s...")
+                    time.sleep(wait)
+
+        return None
 
     def extract_format_string(self, soup: BeautifulSoup) -> Optional[str]:
         """
         Extract the syslog format string from the page
-        
+
         Args:
             soup: BeautifulSoup object of the page
-            
+
         Returns:
             Format string or None if not found
         """
         # Look for text that starts with "Format:"
         text_content = soup.get_text()
-        
+
         # Pattern to match "Format:" followed by the comma-separated list
         format_match = re.search(r'Format\s*:\s*(.+?)(?:\n\s*\n|\n{2,})', text_content, re.IGNORECASE | re.DOTALL)
-        
+
         if format_match:
             format_string = format_match.group(1).strip()
             # Clean up any extra whitespace
             format_string = re.sub(r'\s+', ' ', format_string)
             logger.info(f"Found format string: {format_string[:100]}...")
             return format_string
-        
+
         logger.warning("No format string found on page")
         return None
 
@@ -224,7 +247,8 @@ class PaloAltoLogScraper:
 
         corrected_names = []
         for _, row in field_table.iterrows():
-            var_name = str(row['Variable Name'])
+            raw = row['Variable Name']
+            var_name = "" if pd.isna(raw) else str(raw)
             field_name = str(row['Field Name'])
 
             if var_name:
@@ -254,22 +278,26 @@ class PaloAltoLogScraper:
             if match:
                 long_name = match.group(1).strip()
                 name_map[long_name] = var_name
-                # Normalized versions for matching
+                # Normalized whitespace version — only add if distinct to avoid redundant keys
                 normalized = re.sub(r'\s+', ' ', long_name)
-                name_map[normalized] = var_name
+                if normalized != long_name:
+                    name_map[normalized] = var_name
                 name_map[normalized.lower()] = var_name
 
         # Global overrides take precedence over auto-detected mappings
         name_map.update(self.global_name_overrides)
         return name_map
 
-    def _transform_format_string(self, format_string: str, name_map: Dict[str, str]) -> str:
-        """Transform format string: replace long names with variable names."""
+    def _transform_format_string(self, format_string: str, name_map: Dict[str, str]) -> List[str]:
+        """Transform format string: replace long names with variable names.
+
+        Returns a list of variable-name tokens (not a CSV string).
+        """
         format_items = [item.strip() for item in format_string.split(',')]
         new_items = []
 
         for item in format_items:
-            # Special case: Device Group Hierarchy Level X
+            # Special case: Device Group Hierarchy Level X (only remaining hardcoded rule)
             match_dg = re.match(r"Device Group Hierarchy Level (\d+)", item, re.IGNORECASE)
             if match_dg:
                 new_items.append(f"dg_hier_level_{match_dg.group(1)}")
@@ -289,8 +317,7 @@ class PaloAltoLogScraper:
         # Apply token-level corrections (fixes PA docs typos in Variable Name column)
         new_items = [self.token_corrections.get(item, item) for item in new_items]
 
-        # Enclose each item in double quotes for CSV format
-        return ",".join(f'"{item}"' for item in new_items)
+        return new_items
 
     def _apply_per_log_corrections(self, items: list, log_type_name: str) -> list:
         """Apply strip and position-based corrections for a specific log type."""
@@ -299,6 +326,12 @@ class PaloAltoLogScraper:
 
         for correction in self.per_log_corrections.get(log_type_name, []):
             pos = correction['position']
+            if pos < 0 or pos >= len(items):
+                logger.warning(
+                    f"Per-log correction for {log_type_name} has out-of-bounds position {pos} "
+                    f"(list length {len(items)}); skipping."
+                )
+                continue
             if 'new' in correction:
                 items[pos] = correction['new']
             elif 'split_into' in correction:
@@ -310,78 +343,81 @@ class PaloAltoLogScraper:
         """
         Extract text from a BeautifulSoup cell while preserving
         line breaks from HTML block elements.
+
+        Uses BS4 tree traversal to avoid regex manipulation of raw HTML.
         """
-        # Get the inner HTML
-        html = str(cell)
+        BLOCK_TAGS = frozenset({'p', 'div', 'li', 'dt', 'dd', 'tr',
+                                 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'})
+        LIST_TAGS = frozenset({'ul', 'ol', 'dl'})
+        parts = []
 
-        # First, normalize all whitespace (including newlines) to single spaces
-        # This removes spurious line breaks from HTML source formatting
-        html = re.sub(r'\s+', ' ', html)
+        def _walk(node):
+            if isinstance(node, NavigableString):
+                # Collapse source-formatting whitespace in text nodes
+                parts.append(re.sub(r'\s+', ' ', str(node)))
+            elif isinstance(node, Tag):
+                name = node.name.lower() if node.name else ''
+                if name == 'br':
+                    parts.append('\n')
+                elif name in BLOCK_TAGS or name in LIST_TAGS:
+                    parts.append('\n')
+                    for child in node.children:
+                        _walk(child)
+                    parts.append('\n')
+                else:
+                    for child in node.children:
+                        _walk(child)
 
-        # Now add intentional line breaks for block elements
-        # Replace <br> tags with newlines
-        html = re.sub(r'<br\s*/?>', '\n', html, flags=re.IGNORECASE)
+        for child in cell.children:
+            _walk(child)
 
-        # Add newlines before block-level opening tags
-        block_tags = r'<(p|div|li|dt|dd|tr|h[1-6])\b[^>]*>'
-        html = re.sub(block_tags, r'\n<\1>', html, flags=re.IGNORECASE)
-
-        # Add newlines after </p> tags (paragraph separation)
-        html = re.sub(r'</p>', '</p>\n', html, flags=re.IGNORECASE)
-
-        # Add newlines after list containers
-        html = re.sub(r'</(ul|ol|dl)>', r'</\1>\n', html, flags=re.IGNORECASE)
-
-        # Parse and extract text
-        soup = BeautifulSoup(html, 'html.parser')
-        text = soup.get_text()
-
-        # Clean up whitespace
-        text = re.sub(r'[^\S\n]+', ' ', text)  # Multiple spaces to single (preserve newlines)
-        text = re.sub(r'\n{3,}', '\n\n', text)  # 3+ newlines to double
+        text = ''.join(parts)
+        # Collapse horizontal whitespace (preserve newlines)
+        text = re.sub(r'[^\S\n]+', ' ', text)
+        # Limit consecutive newlines
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        # Strip trailing whitespace from each line
         lines = [line.strip() for line in text.split('\n')]
-        text = '\n'.join(lines)
-
-        return text.strip()
+        return '\n'.join(lines).strip()
 
     def extract_field_table(self, soup: BeautifulSoup) -> Optional[pd.DataFrame]:
         """
         Extract the field description table from the page
-        
+
         Args:
             soup: BeautifulSoup object of the page
-            
+
         Returns:
             DataFrame with field descriptions or None if not found
         """
         # Look for tables that contain field descriptions
         tables = soup.find_all('table')
-        
+
         for table in tables:
             # Check if this table contains field information
             headers = [th.get_text(strip=True).lower() for th in table.find_all('th')]
-            
+
             # Look for tables with "field name" and "description" headers
             if 'field name' in ' '.join(headers) or 'field' in ' '.join(headers):
                 try:
                     # Extract table data
                     data = []
                     rows = table.find_all('tr')
-                    
+
                     if not rows:
                         continue
-                    
+
                     # Get headers
                     header_row = rows[0]
                     headers = [th.get_text(strip=True) for th in header_row.find_all(['th', 'td'])]
-                    
+
                     # Get data rows
                     for row in rows[1:]:
                         cells = row.find_all(['td', 'th'])
                         if len(cells) >= len(headers):
                             row_data = [self._get_cell_text_with_formatting(cell) for cell in cells[:len(headers)]]
                             data.append(row_data)
-                    
+
                     if data:
                         df = pd.DataFrame(data, columns=headers)
 
@@ -394,114 +430,104 @@ class PaloAltoLogScraper:
 
                         logger.info(f"Extracted field table: {len(df)} rows")
                         return df
-                
+
                 except Exception as e:
                     logger.error(f"Error parsing field table: {e}")
                     continue
-        
+
         logger.warning("No field description table found")
         return None
 
     def scrape_log_type(self, log_type: dict, version_dir: str) -> bool:
         """
-        Scrape a specific log type and save format and table files
-        
+        Scrape a specific log type and save format and table files.
+
         Args:
             log_type: Dictionary with 'name' and 'url' keys
             version_dir: Directory to save files
-            
+
         Returns:
-            True if successful, False otherwise
+            True if both format string and field table were saved successfully.
+            A warning is logged when only one of the two was available (partial result).
         """
         logger.info(f"Processing log type: {log_type['name']}")
-        
+
         soup = self.get_page_content(log_type['url'])
         if not soup:
             logger.error(f"Failed to fetch page for {log_type['name']}")
             return False
-        
-        # Extract format string
-        format_string = self.extract_format_string(soup)
 
-        # Extract field table
+        # Extract format string and field table
+        format_string = self.extract_format_string(soup)
         field_table = self.extract_field_table(soup)
+
         if field_table is not None:
             field_table = self._apply_field_table_corrections(field_table)
-            # Save table to CSV
-            table_filename = f"{log_type['name']}_fields.csv"
-            table_filepath = os.path.join(version_dir, table_filename)
-
+            table_filepath = os.path.join(version_dir, f"{log_type['name']}_fields.csv")
             try:
                 field_table.to_csv(table_filepath, index=False)
                 logger.info(f"Saved field table to {table_filepath}")
             except Exception as e:
                 logger.error(f"Error saving field table: {e}")
 
-        # Save format file: line 1 = original, line 2 = transformed
-        if format_string and field_table is not None:
-            format_filename = f"{log_type['name']}_format.csv"
-            format_filepath = os.path.join(version_dir, format_filename)
+        if format_string:
+            format_filepath = os.path.join(version_dir, f"{log_type['name']}_format.csv")
 
-            name_map = self._build_name_map(field_table)
-            transformed = self._transform_format_string(format_string, name_map)
-
-            # Parse transformed CSV back into a list, apply per-log corrections, re-join
-            items = [item.strip('"') for item in transformed.split('","')]
-            items[0] = items[0].lstrip('"')
-            items[-1] = items[-1].rstrip('"')
-            items = self._apply_per_log_corrections(items, log_type['name'])
-            transformed = ",".join(f'"{item}"' for item in items)
+            if field_table is not None:
+                name_map = self._build_name_map(field_table)
+                items = self._transform_format_string(format_string, name_map)
+                items = self._apply_per_log_corrections(items, log_type['name'])
+                transformed = ",".join(f'"{item}"' for item in items)
+            else:
+                transformed = None
 
             try:
                 with open(format_filepath, 'w', encoding='utf-8') as f:
                     f.write(f"{format_string}\n")
-                    f.write(f"{transformed}\n")
-                logger.info(f"Saved format to {format_filepath}")
-            except Exception as e:
-                logger.error(f"Error saving format file: {e}")
-        elif format_string:
-            # Save format without transformation if no field table
-            format_filename = f"{log_type['name']}_format.csv"
-            format_filepath = os.path.join(version_dir, format_filename)
-
-            try:
-                with open(format_filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"{format_string}\n")
-                logger.info(f"Saved format to {format_filepath} (no transformation - field table missing)")
+                    if transformed:
+                        f.write(f"{transformed}\n")
+                logger.info(f"Saved format to {format_filepath}"
+                            + ("" if transformed else " (no transformation - field table missing)"))
             except Exception as e:
                 logger.error(f"Error saving format file: {e}")
 
-        return format_string is not None or field_table is not None
+        # Warn on partial results
+        if format_string is None and field_table is not None:
+            logger.warning(f"{log_type['name']}: field table saved but no format string found")
+        elif format_string is not None and field_table is None:
+            logger.warning(f"{log_type['name']}: format string saved without field table (no transformation)")
+
+        return format_string is not None and field_table is not None
 
     def scrape_version(self, version: dict) -> int:
         """
         Scrape all log types for a specific PAN-OS version
-        
+
         Args:
             version: Version dictionary with 'name' and 'log_types' keys
-            
+
         Returns:
             Number of successfully processed log types
         """
         logger.info(f"Starting scrape for PAN-OS version {version['name']}")
-        
+
         # Create version directory
         version_dir = self.get_version_directory(version['name'])
         os.makedirs(version_dir, exist_ok=True)
-        
+
         # Process each log type
         successful_count = 0
-        
+
         for log_type in version['log_types']:
             if self.scrape_log_type(log_type, version_dir):
                 successful_count += 1
-        
+
         return successful_count
 
     def run(self, specific_versions: Optional[List[dict]] = None):
         """
         Run the complete scraping process
-        
+
         Args:
             specific_versions: Optional list of specific versions to scrape
         """
@@ -515,7 +541,7 @@ class PaloAltoLogScraper:
             versions_to_scrape = self._get_versions_to_scrape()
 
         logger.info(f"Starting scrape for {len(versions_to_scrape)} versions")
-        
+
         # Dry run mode - just print what would be scraped
         if self.dry_run:
             logger.info("=" * 60)
@@ -540,8 +566,8 @@ class PaloAltoLogScraper:
                 total_processed += successful_count
                 logger.info(f"Completed version {version['name']} - {successful_count} log types processed")
 
-                # Brief pause between versions
-                time.sleep(2)
+                # Configurable pause between versions (fix #11: was hardcoded to 2s)
+                time.sleep(self.inter_version_delay)
 
             except Exception as e:
                 logger.error(f"Error processing version {version['name']}: {e}")
@@ -549,9 +575,11 @@ class PaloAltoLogScraper:
 
         logger.info(f"Scraping completed! Total log types processed: {total_processed}")
 
+
 def main():
     """Main execution function"""
-    scraper = PaloAltoLogScraper(base_delay=1.0)
+    # Fix #1: no longer hardcoding base_delay=1.0; let the config file value take effect
+    scraper = PaloAltoLogScraper()
 
     # Scrape all versions from config
     scraper.run()
