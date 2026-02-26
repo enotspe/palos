@@ -89,6 +89,7 @@ for a specific reason documented in the Root Cause column below.
 | Destination Country (dstloc) | "Destination Location" | `dstloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
 | *(absent from field table)* | "Parent Start Time" | `parent_start_time` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Field absent from most of these log types' field tables |
 | PCAP ID (pcap_id) | "PCAP_ID" | `pcap_id` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Format string uses underscore; field table uses space |
+| IP Protocol (proto) | "Protocol" | `proto` | GTP_Log, Traffic_Log, Tunnel_Inspection_Log | Format string drops the "IP " prefix present in the field table name |
 | Threat/Content Type (subtype) | "Subtype" | `subtype` | Config_Log, Tunnel_Inspection_Log | Format string name differs from field table name |
 | Serial Number (serial) | "Serial" | `serial` | IP_Tag_Log | Format string name differs from field table name |
 | Certificate Fingerprint (fingerprint) | "Fingerprint" | `fingerprint` | Decryption_Log | Format string name differs from field table name |

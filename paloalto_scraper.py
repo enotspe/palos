@@ -275,11 +275,6 @@ class PaloAltoLogScraper:
                 new_items.append(f"dg_hier_level_{match_dg.group(1)}")
                 continue
 
-            # Special case: Protocol -> ip protocol
-            if item == "Protocol" and "ip protocol" in name_map:
-                new_items.append(name_map["ip protocol"])
-                continue
-
             # Try direct match, then normalized, then lowercase
             normalized = re.sub(r'\s+', ' ', item)
             if item in name_map:

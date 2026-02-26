@@ -75,10 +75,13 @@ have no matching parenthetical anywhere in the field table.
 
 `_transform_format_string` splits the format string on commas and for each token:
 1. Handles `Device Group Hierarchy Level N` via a dedicated regex → `dg_hier_level_N`
-2. Handles the `Protocol` → `ip_protocol` special case
-3. Tries direct match, normalized match, and lowercase match against `name_map`
-4. Falls back to the original token (e.g. `FUTURE_USE`) if no match found
-5. Applies `token_corrections` to every output token
+2. Tries direct match, normalized match, and lowercase match against `name_map`
+3. Falls back to the original token (e.g. `FUTURE_USE`) if no match found
+4. Applies `token_corrections` to every output token
+
+The `Device Group Hierarchy Level N` regex is the only hardcoded special case remaining.
+All other name mismatches (including `"Protocol"` → `proto`) are handled via
+`global_name_overrides` in `paloalto_scraper_exceptions.yaml`.
 
 `_apply_per_log_corrections` applies position-based fixes last:
 - `strip_leading_future_use`: removes position 0 if it is `FUTURE_USE` (currently disabled)
