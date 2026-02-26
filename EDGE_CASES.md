@@ -104,7 +104,7 @@ for a specific reason documented in the Root Cause column below.
 | Strict Checking (strict_check) | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Format string name differs from field table name |
 | Security Rule UUID (rule_uuid) | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Format string name differs from field table name |
 | Dynamic User Group Name (dynusergroup_name) | "Dynamic User Group" | `dynusergroup_name` | Tunnel_Inspection_Log | Format string name differs from field table name |
-| *(absent from field table)* | "Threat/Content Type" | `subtype` | Audit_Log, Authentication_Log, Data_Filtering_Log, Decryption_Log, GTP_Log, GlobalProtect_Log, HIP_Match_Log, IP_Tag_Log, Threat_Log, Traffic_Log, URL_Filtering_Log, User_ID_Log | Field absent from Decryption field table; override applied globally to all log types using this token |
+| Threat/ContentType (subtype) | "Threat/Content Type" | `subtype` | Decryption_Log | Typo in PA field table: missing space ("ContentType" instead of "Content Type") — auto-detected key `"Threat/ContentType"` does not match format string token `"Threat/Content Type"` |
 | Issuer Common Name (issuer_cn) | "Issuer Subject Common Name" | `issuer_cn` | Decryption_Log | Format string name differs from field table name |
 | Root Common Name (root_cn) | "Root Subject Common Name" | `root_cn` | Decryption_Log | Format string name differs from field table name |
 | Server Name Indication(sni) | "Server Name Indication" | `sni` | Decryption_Log | Malformed parenthetical (no space before `(`) — regex fails to extract variable name |
