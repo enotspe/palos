@@ -95,6 +95,9 @@ correct even where the source documentation is not.
 Every known correction is catalogued in [EDGE_CASES.md](EDGE_CASES.md), organized by
 correction layer, with the root cause and affected log types noted for each entry.
 
+These findings have also been reported to Palo Alto Networks via the Live Community:
+["Bugs" on syslog field descriptions documentation (PAN-OS)](https://live.paloaltonetworks.com/t5/general-topics/quot-bugs-quot-on-syslog-field-descriptions-documentation-pan-os/m-p/1249086#M126065)
+
 ## For Developers & Maintainers
 
 See [DEVELOPERS_GUIDE.md](DEVELOPERS_GUIDE.md) for:
