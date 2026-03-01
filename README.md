@@ -19,20 +19,22 @@ Output lands in version-named subdirectories (e.g. `11.1+/`) in the current work
 
 ```
 {version}/
-  {LogType}_format.csv        # 2 lines: original format string, then variable-name format
-  {LogType}_fields.csv        # Field Name, Variable Name, Description (+ any extra cols)
+  {LogType}_format.csv        # e.g. Traffic_format.csv (not Traffic_Log_format.csv)
+  {LogType}_fields.csv        # e.g. Traffic_fields.csv
   panos_syslog_fields.csv     # Consolidated matrix: rows = positions, columns = log types
 ```
+
+The log type name in config (e.g. `Traffic_Log`) has `_Log` stripped in output file names.
 
 **`{LogType}_format.csv`** — line 1 is the raw comma-separated format string exactly as PAN-OS
 documents it (e.g. `FUTURE_USE, Receive Time, Serial Number, ...`). Line 2 is the transformed
 version with long names replaced by their snake_case variable names (`FUTURE_USE, receive_time,
 serial, ...`). Both lines are quoted CSV so they parse cleanly into arrays.
 
-**`{LogType}_fields.csv`** — the field reference table scraped from PAN-OS docs, with a `Variable Name`
-column inserted after `Field Name`. Variable names are extracted from the parenthetical in each
-field's name (e.g. `Serial Number (serial)` → `serial`) and post-processed to fix PAN-OS docs
-inconsistencies. See [EDGE_CASES.md](EDGE_CASES.md) for the full list of corrections.
+**`{LogType}_fields.csv`** — the field reference table scraped from PAN-OS docs, with `Field Name lookup`
+and `Variable Name` columns inserted after `Field Name`. Variable names are extracted from the
+parenthetical in each field's name (e.g. `Serial Number (serial)` → `serial`) and post-processed
+to fix PAN-OS docs inconsistencies. See [EDGE_CASES.md](EDGE_CASES.md) for the full list of corrections.
 
 ## Configuration
 
@@ -102,7 +104,7 @@ These findings have also been reported to Palo Alto Networks via the Live Commun
 
 See [DEVELOPERS_GUIDE.md](DEVELOPERS_GUIDE.md) for:
 
-- The corrections pipeline walkthrough (5 stages, from raw HTML to final CSV)
-- How to add a new exception (token correction, missing variable name, position-based fix)
+- The corrections pipeline walkthrough (from raw HTML to final CSV)
+- How to add a new exception (field name lookup correction, variable name correction, raw format token fix)
 - Key methods reference
 - Architecture overview

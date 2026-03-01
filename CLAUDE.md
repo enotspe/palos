@@ -53,11 +53,17 @@ This is a single-file web scraper (`paloalto_scraper.py`) with a YAML config (`p
 
 ### Output structure
 ```
-{version_name}/          # e.g. 11.1+/
-  {LogType}_format.csv   # 2 lines: original format, variable-name format  (e.g. Audit_format.csv)
-  {LogType}_fields.csv   # Field Name, Variable Name, Description (+ other cols)  (e.g. Audit_fields.csv)
-  panos_syslog_fields.csv  # consolidated matrix across all log types
+{version_name}/              # e.g. 11.1+/
+  {LogType}_format.csv       # e.g. Audit_format.csv, Traffic_format.csv (never Audit_Log_format.csv)
+  {LogType}_fields.csv       # e.g. Audit_fields.csv — columns: Field Name, Field Name lookup, Variable Name, Description
+  panos_syslog_fields.csv    # consolidated matrix across all log types
 ```
 
-The `_Log` suffix is stripped from the log type name when generating file names
-(e.g. `Audit_Log` → `Audit_format.csv`, `Traffic_Log` → `Traffic_format.csv`).
+The log type name in config (e.g. `Audit_Log`) has `_Log` stripped when generating file names.
+
+### Gotchas
+- `force_rescrape` is currently `true` in config — every run re-fetches all pages. Set to `false` to skip existing output.
+- `field_name_lookup_corrections.global`: only add an entry when the table key is NEVER the
+  correct format token for any log type. If any log uses it as a format token, use
+  `variable_name_corrections.global` to catch the pass-through instead (see EDGE_CASES.md).
+- `per_log_corrections` with `match:` replaces the FIRST occurrence only (uses `list.index()`).
