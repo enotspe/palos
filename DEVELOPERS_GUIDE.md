@@ -16,17 +16,90 @@ paloalto_scraper_config.yaml    # Versions to scrape, URLs, run settings
 paloalto_scraper_exceptions.yaml  # Known PAN-OS docs corrections (see below)
 ```
 
-Data flows through five stages per log type:
+## Script Flow
 
 ```
-1. Fetch         HTTP GET → BeautifulSoup
-2. Extract       format string + field table from HTML
-3. Correct       normalize Field Name lookup column
-4. Lookup        map format tokens → variable names via field table
-5. Correct       fix variable names in token list + field table
+  paloalto_scraper_config.yaml          paloalto_scraper_exceptions.yaml
+  (versions, URLs, settings)            (field/variable corrections)
+               │                                      │
+               └──────────────────┬───────────────────┘
+                                  ▼
+                       PaloAltoLogScraper.__init__()
+                                  │
+                                  ▼
+                          run()
+                    ┌─────────────────────────┐
+                    │  for each version        │
+                    │    for each log type     │
+                    │      scrape_log_type()   │
+                    └──────────┬──────────────┘
+                               │ HTTP GET
+                               ▼
+                       get_page_content()
+                       BeautifulSoup (soup)
+                               │
+               ┌───────────────┴───────────────┐
+               │                               │
+               ▼                               ▼
+  extract_format_string()           extract_field_table()
+  ├─ regex-extract Format: section  ├─ find table with "field name" header
+  ├─ split on commas → tokens[]     ├─ _extract_field_name_lookup()  ← \s*\(
+  └─ _apply_per_log_corrections()   └─ _extract_variable_name()      ← \s*\(
+     config: per_log_corrections
+  ─────────────────────────────     ──────────────────────────────────────────
+  returns:                          returns DataFrame with columns:
+    raw_string  (for CSV line 1)      Field Name | Field Name lookup
+    tokens[]    (corrected)           Variable Name | Description | ...
+               │                               │
+               │                               ▼
+               │              _apply_field_name_lookup_corrections()
+               │              config: field_name_lookup_corrections
+               │              (normalizes lookup keys to match format tokens)
+               │                               │
+               │                               ├──────────► {LogType}_fields.csv
+               │                               │
+               └───────────────────────────────┘
+                               │
+                               ▼
+                  _lookup_variable_names(tokens, field_table)
+                  ┌────────────────────────────────────────────┐
+                  │ for each token:                            │
+                  │  1. DG Hierarchy regex → dg_hier_level_N  │
+                  │  2. exact match in Field Name lookup col   │
+                  │     found + non-empty  → return var name  │
+                  │     found + empty      → write token back  │
+                  │                          pass through      │
+                  │     not found          → pass through      │
+                  └────────────────────────────────────────────┘
+                               │
+                               ▼
+                  _apply_variable_name_corrections()
+                  config: variable_name_corrections
+                  ┌────────────────────────────────────────────┐
+                  │ global:      replace-all on tokens[]       │
+                  │              replace-all on field table     │
+                  │ per_log_type: first-occurrence on tokens[] │
+                  │              replace-all on field table     │
+                  └────────────────────────────────────────────┘
+                               │
+                               ▼
+                        {LogType}_format.csv
+                        line 1: raw_string
+                        line 2: corrected tokens (quoted CSV)
+
+  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ after all log types ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+
+                  _build_consolidated_matrix()
+                  reads line 2 of every {LogType}_format.csv
+                  aligns by position index across all log types
+                               │
+                               ▼
+                      panos_syslog_fields.csv
+                      (rows = positions, columns = log types)
 ```
 
-Stages 3–5 are where the exceptions system lives.
+Stages 3–5 (field name lookup corrections → lookup → variable name corrections) are where
+the exceptions system lives. See [EDGE_CASES.md](EDGE_CASES.md) for every known correction.
 
 ---
 
