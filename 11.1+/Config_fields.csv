@@ -2,7 +2,7 @@ Field Name,Field Name lookup,Variable Name,Description
 Receive Time (receive_time or cef-formatted-receive_time),Receive Time,receive_time,Time the log was received at the management plane.
 Serial Number (serial),Serial Number,serial,Serial number of the device that generated the log.
 Type (type),Type,type,Specifies the type of log; value is CONFIG.
-Threat/Content Type (subtype),Threat/Content Type,subtype,Subtype of the configuration log; unused.
+Threat/Content Type (subtype),Subtype,subtype,Subtype of the configuration log; unused.
 Generated Time (time_generated or cef-formatted-time_generated),Generated Time,time_generated,Time the log was generated on the dataplane.
 Host (host),Host,host,Hostname or IP address of the client machine
 Virtual System (vsys),Virtual System,vsys,Virtual System associated with the configuration log

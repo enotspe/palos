@@ -3,7 +3,7 @@ Receive Time (receive_time or cef-formatted-receive_time),Receive Time,receive_t
 Serial Number (serial #),Serial Number,serial,Serial number of the firewall that generated the log.
 Type (type),Type,type,Specifies the type of log; value is THREAT.
 Threat/Content Type (subtype),Threat/Content Type,subtype,"Subtype of threat log; value is data, dlp, dlp-non-file, file."
-Generate Time (time_generated or cef-formatted-time_generated),Generate Time,time_generated,Time the log was generated on the dataplane.
+Generate Time (time_generated or cef-formatted-time_generated),Generated Time,time_generated,Time the log was generated on the dataplane.
 Source address (src),Source Address,src,Original session source IP address.
 Destination address (dst),Destination Address,dst,Original session destination IP address.
 NAT Source IP (natsrc),NAT Source IP,natsrc,"If source NAT performed, the post-NAT source IP address."
@@ -121,7 +121,7 @@ Destination Country (dstloc),Destination Country,dstloc,Destination country or I
 Content Type (contenttype),Content Type,contenttype,"Applicable only when Subtype is URL.
 
 Content type of the HTTP response data. Maximum length 32 bytes."
-PCAP ID (pcap_id),PCAP ID,pcap_id,"The packet capture (pcap) ID is a 64 bit unsigned integral denoting an ID to correlate threat pcap files with extended pcaps taken as a part of that flow. All threat logs will contain either a pcap_id of 0 (no associated pcap), or an ID referencing the extended pcap file."
+PCAP ID (pcap_id),PCAP_ID,pcap_id,"The packet capture (pcap) ID is a 64 bit unsigned integral denoting an ID to correlate threat pcap files with extended pcaps taken as a part of that flow. All threat logs will contain either a pcap_id of 0 (no associated pcap), or an ID referencing the extended pcap file."
 File Digest (filedigest),File Digest,filedigest,"Only for WildFire subtype; all other types do not use this field
 
 The filedigest string shows the binary hash of the file sent to be analyzed by the WildFire service."
@@ -162,7 +162,7 @@ HTTP Method (http_method),HTTP Method,http_method,"Only in URL filtering logs. D
 Tunnel ID/IMSI (tunnel_id/imsi),Tunnel ID/IMSI,tunnel_id/imsi,International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system. IMSI shall consist of decimal digits (0 through 9) only and maximum number of digits allowed are 15.
 Monitor Tag/IMEI (monitortag/imei),Monitor Tag/IMEI,monitortag/imei,International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment.
 Parent Session ID (parent_session_id),Parent Session ID,parent_session_id,ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only.
-Parent Session Start Time (parent_start_time),Parent Session Start Time,parent_start_time,Year/month/day hours:minutes:seconds that the parent tunnel session began.
+Parent Session Start Time (parent_start_time),Parent Start Time,parent_start_time,Year/month/day hours:minutes:seconds that the parent tunnel session began.
 Tunnel Type (tunnel),Tunnel Type,tunnel,"Type of tunnel, such as GRE or IPSec."
 Threat Category (thr_category),Threat Category,thr_category,"Describes threat categories used to classify different types of threat signatures.
 

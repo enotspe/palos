@@ -73,7 +73,7 @@ Flags (flags),Flags,flags,"32-bit field that provides details on session; this f
 0x00000400—decrypted traffic is being sent out clear text through a mirror port
 
 0x00000100—payload of the outer tunnel is being inspected"
-IP Protocol (proto),IP Protocol,proto,IP protocol associated with the session.
+IP Protocol (proto),Protocol,proto,IP protocol associated with the session.
 Action (action),Action,action,"Action taken for the session; possible values are:
 
 allow—session was allowed by policy

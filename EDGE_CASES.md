@@ -93,10 +93,8 @@ re.match(r"(?:Device Group Hierarchy(?:\s+Level)?|DG Hierarchy Level)\s+(\d+)", 
 ### Global field name lookup corrections
 
 These correct field table lookup keys that only need renaming for specific log types where the
-table key is NEVER the format string token for any log type. Entries where the table key IS the
-correct format token for some other log type cannot be global — they are handled instead via
-`variable_name_corrections.global` (the format token passes through lookup unchanged and is
-caught downstream).
+table key is NEVER the correct format token for any log type. Entries where the table key IS the
+correct format token for some log type cannot be global — they are handled per_log_type instead.
 
 | Field Name lookup (in table) | Format string token | Variable Name | Log Type | Notes |
 |---|---|---|---|---|
@@ -114,21 +112,23 @@ caught downstream).
 | Serving Network MCC | "Serving Country MCC" | `mcc` | GTP_Log | Table name differs from format token |
 | Strict Checking | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Table name differs from format token |
 | Security Rule UUID | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Table name differs from format token |
+| Generate Time | "Generated Time" | `time_generated` | most log types | Table "Generate Time", format "Generated Time" (extra 'd'); lookup then returns variable name from parenthetical |
+| Parent Session Start Time | "Parent Start Time" | `parent_start_time` | some log types | Table name differs from format token |
 
-The following were previously listed as global corrections but are handled via
-`variable_name_corrections.global` instead (see Layer 3), because the table key IS the
-correct format token in some log types:
+The following are NOT global because the table key IS the correct format token for some log types
+(renaming globally would break those logs). They are handled by `field_name_lookup_corrections.per_log_type`
+for the specific logs that use the different format token:
 
-| Table key | Format token (affected logs) | Format token (other logs) | Handled by |
+| Table key | "Other" format token (affected logs) | "Same as table" format token (other logs) | Handled by |
 |---|---|---|---|
-| Source Country | "Source Location" | "Source Country" (Traffic) | `variable_name_corrections["Source Location"]` |
-| Destination Country | "Destination Location" | "Destination Country" (Traffic) | `variable_name_corrections["Destination Location"]` |
-| IP Protocol | "Protocol" | "IP Protocol" (Decryption) | `variable_name_corrections["Protocol"]` |
-| High Resolution Timestamp | "High Res Timestamp" | "High Resolution Timestamp" (most logs) | `variable_name_corrections["High Res Timestamp"]` |
-| Threat/Content Type | "Subtype" | "Threat/Content Type" (Traffic, etc.) | `variable_name_corrections["Subtype"]` |
-| Tunnel Type | "Tunnel" | "Tunnel Type" (Traffic, GlobalProtect) | `variable_name_corrections["Tunnel"]` |
-| Dynamic User Group Name | "Dynamic User Group" | "Dynamic User Group Name" (Traffic, etc.) | `variable_name_corrections["Dynamic User Group"]` |
-| PCAP ID | "PCAP_ID" | "PCAP ID" (GTP, Tunnel_Inspection) | `variable_name_corrections["PCAP_ID"]` |
+| Source Country | "Source Location" | "Source Country" (Traffic, URL, Data) | `per_log_type` (Threat, GTP, Tunnel_Inspection) |
+| Destination Country | "Destination Location" | "Destination Country" (Traffic, URL, Data) | `per_log_type` (Threat, GTP, Tunnel_Inspection) |
+| IP Protocol | "Protocol" | "IP Protocol" (Decryption) | `per_log_type` (Traffic, GTP, Tunnel_Inspection) |
+| High Resolution Timestamp | "High Res Timestamp" | "High Resolution Timestamp" (most logs) | `per_log_type` (Decryption); `variable_name_corrections` (GlobalProtect — no table row for this field) |
+| Threat/Content Type | "Subtype" | "Threat/Content Type" (Traffic, URL, Data, Audit) | `per_log_type` (Config, Tunnel_Inspection) |
+| Tunnel Type | "Tunnel" | "Tunnel Type" (Traffic, GlobalProtect) | `per_log_type` (Decryption, Tunnel_Inspection) |
+| Dynamic User Group Name | "Dynamic User Group" | "Dynamic User Group Name" (Traffic, etc.) | `per_log_type` (Tunnel_Inspection) |
+| PCAP ID | "PCAP_ID" | "PCAP ID" (GTP, Tunnel_Inspection) | `per_log_type` (Threat, URL, Data) |
 
 ### Per-log-type field name lookup corrections
 
@@ -137,10 +137,28 @@ correct format token in some log types:
 | IP_Tag_Log | "Serial Number" | "Serial" | Format string uses abbreviated token |
 | Threat_Log | "Source address" | "Source Address" | Field table lowercase 'a'; format uppercase 'A' |
 | Threat_Log | "Destination address" | "Destination Address" | Same case mismatch |
+| Threat_Log | "Source Country" | "Source Location" | Format "Source Location", table "Source Country" |
+| Threat_Log | "Destination Country" | "Destination Location" | Format "Destination Location", table "Destination Country" |
+| Threat_Log | "PCAP ID" | "PCAP_ID" | Format "PCAP_ID" (underscore), table "PCAP ID" (space) |
 | URL_Filtering_Log | "Source address" | "Source Address" | Same case mismatch as Threat |
 | URL_Filtering_Log | "Destination address" | "Destination Address" | Same case mismatch |
+| URL_Filtering_Log | "PCAP ID" | "PCAP_ID" | Same as Threat |
 | Data_Filtering_Log | "Source address" | "Source Address" | Same case mismatch as Threat |
 | Data_Filtering_Log | "Destination address" | "Destination Address" | Same case mismatch |
+| Data_Filtering_Log | "PCAP ID" | "PCAP_ID" | Same as Threat |
+| Config_Log | "Threat/Content Type" | "Subtype" | Format "Subtype", table "Threat/Content Type" |
+| Traffic_Log | "IP Protocol" | "Protocol" | Format "Protocol", table "IP Protocol" |
+| GTP_Log | "Source Country" | "Source Location" | Same as Threat |
+| GTP_Log | "Destination Country" | "Destination Location" | Same as Threat |
+| GTP_Log | "IP Protocol" | "Protocol" | Same as Traffic |
+| Decryption_Log | "High Resolution Timestamp" | "High Res Timestamp" | Format "High Res Timestamp", table "High Resolution Timestamp" |
+| Decryption_Log | "Tunnel Type" | "Tunnel" | Format "Tunnel", table "Tunnel Type" |
+| Tunnel_Inspection_Log | "Source Country" | "Source Location" | Same as Threat |
+| Tunnel_Inspection_Log | "Destination Country" | "Destination Location" | Same as Threat |
+| Tunnel_Inspection_Log | "IP Protocol" | "Protocol" | Same as Traffic |
+| Tunnel_Inspection_Log | "Threat/Content Type" | "Subtype" | Same as Config |
+| Tunnel_Inspection_Log | "Tunnel Type" | "Tunnel" | Same as Decryption |
+| Tunnel_Inspection_Log | "Dynamic User Group Name" | "Dynamic User Group" | Format "Dynamic User Group", table "Dynamic User Group Name" |
 
 ---
 
@@ -158,26 +176,45 @@ empty Variable Name that gets written back), the raw long name passes through to
 
 | Token passed through | Variable Name | Log Type | Notes |
 |---|---|---|---|
-| "Generated Time" | `time_generated` | Most log types | Format "Generated Time"; table "Generate Time" — lookup fails |
-| "Generate Time" | `time_generated` | IP_Tag_Log, Audit_Log | IP_Tag: format "Generate Time", table "Generated Time" (mismatch); Audit_Log: "Generate Time" row has no parenthetical → placeholder pass-through |
-| "Parent Start Time" | `parent_start_time` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Field absent from most of these log types' field tables |
-| "Source Location" | `srcloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Table "Source Country" ≠ format "Source Location" |
-| "Destination Location" | `dstloc` | GTP_Log, Threat_Log, Tunnel_Inspection_Log | Table "Destination Country" ≠ format "Destination Location" |
-| "Protocol" | `proto` | GTP_Log, Traffic_Log, Tunnel_Inspection_Log | Table "IP Protocol" ≠ format "Protocol" |
-| "High Res Timestamp" | `high_res_timestamp` | Decryption_Log, GlobalProtect_Log | Table "High Resolution Timestamp" ≠ format "High Res Timestamp" |
-| "Subtype" | `subtype` | Config_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Table "Threat/Content Type" ≠ format "Subtype" |
-| "Tunnel" | `tunnel` | Decryption_Log, Tunnel_Inspection_Log | Table "Tunnel Type" ≠ format "Tunnel" |
-| "Dynamic User Group" | `dynusergroup_name` | Tunnel_Inspection_Log | Table "Dynamic User Group Name" ≠ format "Dynamic User Group" |
-| "PCAP_ID" | `pcap_id` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Table "PCAP ID" ≠ format "PCAP_ID" |
-| "Source Mac Address" | `src_mac` | Traffic_Log, Threat_Log, URL_Filtering_Log, Data_Filtering_Log, Authentication_Log, Decryption_Log | Table "Source MAC Address" (all-caps MAC) ≠ format "Source Mac Address" |
-| "Destination Mac Address" | `dst_mac` | Traffic_Log, Threat_Log, URL_Filtering_Log, Data_Filtering_Log, Decryption_Log | Table "Destination MAC Address" ≠ format "Destination Mac Address" |
+| "Generate Time" | `time_generated` | IP_Tag_Log, Audit_Log | IP_Tag: format "Generate Time", table "Generated Time" — correction doesn't apply, lookup fails; Audit_Log: table "Generate Time" was renamed to "Generated Time" by the global correction, so format "Generate Time" now fails lookup |
+| "Parent Start Time" | `parent_start_time` | some log types | Safety fallback: field absent from some log type field tables even after global "Parent Session Start Time" correction |
+| "High Res Timestamp" | `high_res_timestamp` | GlobalProtect_Log | GlobalProtect field table has no "High Resolution Timestamp" row at all — per_log_type correction cannot apply |
+| "Source Mac Address" | `src_mac` | Traffic_Log, Authentication_Log, Decryption_Log | These format strings use mixed-case "Source Mac Address"; table key is all-caps "Source MAC Address" → lookup fails |
+| "Destination Mac Address" | `dst_mac` | Traffic_Log, Decryption_Log | Same mixed-case mismatch as Source Mac Address |
 
-**Note on Generate Time / Generated Time:** The format token differs between log types.
-For most logs: format "Generated Time", table "Generate Time" → lookup fails → passes through
-→ `variable_name_corrections["Generated Time"]`. For IP_Tag_Log: format "Generate Time",
-table "Generated Time" → lookup fails → passes through → `variable_name_corrections["Generate Time"]`.
-For Audit_Log: format "Generate Time", table "Generate Time" (no parenthetical) → found + empty
-Variable Name → placeholder pass-through → same correction catches it.
+The following were previously lookup failures but are now resolved by `field_name_lookup_corrections.per_log_type` —
+lookup now succeeds and returns the correct variable name from the field table parenthetical directly:
+
+| Token (was passed through) | Variable Name | Resolved by |
+|---|---|---|
+| "Generated Time" | `time_generated` | global: "Generate Time" → "Generated Time" renames table key; lookup succeeds |
+| "Source Location" | `srcloc` | per_log_type (Threat/GTP/Tunnel_Inspection): "Source Country" → "Source Location" |
+| "Destination Location" | `dstloc` | per_log_type (Threat/GTP/Tunnel_Inspection): "Destination Country" → "Destination Location" |
+| "Protocol" | `proto` | per_log_type (Traffic/GTP/Tunnel_Inspection): "IP Protocol" → "Protocol" |
+| "Subtype" | `subtype` | per_log_type (Config/Tunnel_Inspection): "Threat/Content Type" → "Subtype" |
+| "Tunnel" | `tunnel` | per_log_type (Decryption/Tunnel_Inspection): "Tunnel Type" → "Tunnel" |
+| "Dynamic User Group" | `dynusergroup_name` | per_log_type (Tunnel_Inspection): "Dynamic User Group Name" → "Dynamic User Group" |
+| "PCAP_ID" | `pcap_id` | per_log_type (Threat/URL/Data): "PCAP ID" → "PCAP_ID" |
+| "High Res Timestamp" | `high_res_timestamp` | per_log_type (Decryption): "High Resolution Timestamp" → "High Res Timestamp"; GlobalProtect still fails (no table row) |
+
+**Note on Generate Time / Generated Time:** `field_name_lookup_corrections.global` renames the
+table key "Generate Time" → "Generated Time". For most logs (where the format token IS "Generated
+Time"), lookup now succeeds and returns `time_generated` from the parenthetical — no
+`variable_name_corrections` entry needed for "Generated Time". Two exceptions remain:
+- **IP_Tag_Log**: format "Generate Time", table "Generated Time" (with 'd') — the global correction
+  key is "Generate Time" which doesn't match IP_Tag's table key "Generated Time", so the correction
+  doesn't apply and IP_Tag's table stays as "Generated Time". Lookup of format token "Generate Time"
+  fails → passes through → caught by `variable_name_corrections["Generate Time"]`.
+- **Audit_Log**: format "Generate Time", table "Generate Time" (no parenthetical) — the global
+  correction renames the table key to "Generated Time". Lookup of format token "Generate Time" now
+  fails (table has "Generated Time") → passes through → caught by `variable_name_corrections["Generate Time"]`.
+
+**Note on Source/Destination MAC Address:** The format string uses different capitalization across
+log types. Threat/URL/Data and most others use all-caps "Source MAC Address" — this matches the
+table key exactly, so lookup succeeds and `src_mac` is returned from the parenthetical directly
+(no correction needed). Traffic/Authentication/Decryption use mixed-case "Source Mac Address" —
+this does NOT match the all-caps table key, so lookup fails and the token passes through to
+`variable_name_corrections`.
 
 ### Field table Variable Name typos
 
@@ -210,7 +247,7 @@ through unchanged. The raw long name then reaches `variable_name_corrections.glo
 | Log Type | Field | Pass-through token | Corrected variable name |
 |---|---|---|---|
 | Audit_Log | Serial Number | "Serial Number" | `serial` |
-| Audit_Log | Generate Time | "Generate Time" | `time_generated` (same correction as IP_Tag_Log pass-through) |
+| Audit_Log | Generate Time | "Generate Time" | `time_generated` — passes through because `field_name_lookup_corrections.global` renamed the table key to "Generated Time", so lookup of "Generate Time" fails (see note above) |
 | Audit_Log | Event ID | "Event ID" | `eventid` |
 | Audit_Log | Object | "Object" | `object` |
 | Audit_Log | CLI Command | "CLI Command" | `cmd` |
@@ -236,7 +273,7 @@ The correct field order is `Cluster Name, Flow Type`, confirmed from actual rece
 and consistent with URL Filtering and Data Filtering. The PAN-OS Threat Log Fields
 documentation page has `Flow Type` and `Cluster Name` transposed.
 
-**Status:** documented but not yet corrected in PALOS. The current `Threat_Log_format.csv`
+**Status:** documented but not yet corrected in PALOS. The current `Threat_format.csv`
 line 2 reflects the erroneous documented order (`flow_type, cluster_name`). A future
 `per_log_corrections` entry with `match: "flow_type"` swapping positions with `cluster_name`
 would fix this without modifying the scraper logic.

@@ -2,7 +2,7 @@ Field Name,Field Name lookup,Variable Name,Description
 Receive Time (receive_time or cef-formatted-receive_time),Receive Time,receive_time,"Month, day, and time the log was received at the management plane."
 Serial Number (serial),Serial Number,serial,Serial number of the firewall that generated the log.
 Type (type),Type,type,Type of log as it pertains to the session: START or END.
-Threat/Content Type (subtype),Threat/Content Type,subtype,"Subtype of traffic log; values are start, end, drop, and deny
+Threat/Content Type (subtype),Subtype,subtype,"Subtype of traffic log; values are start, end, drop, and deny
 
 Start—session started
 
@@ -55,7 +55,7 @@ Flags (flags),Flags,flags,"32-bit field that provides details on session; this f
 0x00002000 —session has a temporary match on a rule for implicit application dependency handling. Available in PAN-OS 5.0.0 and above.
 
 0x00000800 —symmetric return was used to forward traffic for this session"
-IP Protocol (proto),IP Protocol,proto,IP protocol associated with the session.
+IP Protocol (proto),Protocol,proto,IP protocol associated with the session.
 Action (action),Action,action,"Action taken for the session; possible values are:
 
 Allow—session was allowed by policy
@@ -89,7 +89,7 @@ Tunnel ID (tunnelid),Tunnel ID,tunnel_id/imsi,ID of the tunnel being inspected o
 Monitor Tag (monitortag),Monitor Tag,monitortag/imei,Monitor name you configured for the Tunnel Inspection policy rule or the International Mobile Equipment Identity (IMEI) ID of the mobile device.
 Parent Session ID (parent_session_id),Parent Session ID,parent_session_id,ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only.
 Parent Start Time (parent_start_time),Parent Start Time,parent_start_time,Year/month/day hours:minutes:seconds that the parent tunnel session began.
-Tunnel Type (tunnel),Tunnel Type,tunnel,"Type of tunnel, such as GRE or IPSec."
+Tunnel Type (tunnel),Tunnel,tunnel,"Type of tunnel, such as GRE or IPSec."
 Bytes (bytes),Bytes,bytes,Number of bytes in the session.
 Bytes Sent (bytes_sent),Bytes Sent,bytes_sent,Number of bytes in the client-to-server direction of the session.
 Bytes Received (bytes_received),Bytes Received,bytes_received,Number of bytes in the server-to-client direction of the session.
@@ -145,7 +145,7 @@ Remote User IP (remote_user_ip),Remote User IP,remote_user_ip,IPv4 or IPv6 addre
 Remote User ID (remote_user_id),Remote User ID,remote_user_id,"IMSI identity of a remote user, and if available, one IMEI identity or one MSISDN identity."
 Security Rule UUID (rule_uuid),Rule UUID,rule_uuid,The UUID that permanently identifies the rule.
 PCAP ID (pcap_id),PCAP ID,pcap_id,Unique packet capture ID that defines the location of the pcap file on the firewall.
-Dynamic User Group Name (dynusergroup_name),Dynamic User Group Name,dynusergroup_name,The name of the dynamic user group that contains the user who initiated the session.
+Dynamic User Group Name (dynusergroup_name),Dynamic User Group,dynusergroup_name,The name of the dynamic user group that contains the user who initiated the session.
 Source External Dynamic List (src_edl),Source External Dynamic List,src_edl,The name of the external dynamic list that contains the source IP address of the traffic.
 Destination External Dynamic List (dst_edl),Destination External Dynamic List,dst_edl,The name of the external dynamic list that contains the destination IP address of the traffic.
 High Resolution Timestamp (high_res timestamp),High Resolution Timestamp,high_res_timestamp,"Time in milliseconds the log was received at the management plane.

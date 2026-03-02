@@ -4,7 +4,7 @@ Serial Number (serial),Serial Number,serial,Serial number of the firewall that g
 Type (type),Type,type,Specifies the type of log; value is DECRYPTION.
 Threat/ContentType (subtype),Threat/Content Type,subtype,Not used in the Decryption log.
 Config Version (config_ver),Config Version,config_ver,The software version.
-Generate Time (time_generated),Generate Time,time_generated,Time the log was generated on the dataplane.
+Generate Time (time_generated),Generated Time,time_generated,Time the log was generated on the dataplane.
 Source Address (src),Source Address,src,Original session source IP address.
 Destination Address (dst),Destination Address,dst,Original session destination IP address.
 NAT Source IP (natsrc),NAT Source IP,natsrc,"If Source NAT performed, the post-NAT Source IP address."
@@ -145,7 +145,7 @@ Source External Dynamic List (src_edl),Source External Dynamic List,src_edl,The 
 Destination External Dynamic List (dst_edl),Destination External Dynamic List,dst_edl,The name of the external dynamic list that contains the destination IP address of the traffic.
 Source Dynamic Address Group (src_dag),Source Dynamic Address Group,src_dag,The dynamic address group that Device-ID identifies as the source of the traffic.
 Destination Dynamic Address Group (dst_dag),Destination Dynamic Address Group,dst_dag,The dynamic address group that Device-ID identifies as the destination for the traffic.
-High Resolution Timestamp (high_res_timestamp),High Resolution Timestamp,high_res_timestamp,"Time in milliseconds the log was received at the management plane.
+High Resolution Timestamp (high_res_timestamp),High Res Timestamp,high_res_timestamp,"Time in milliseconds the log was received at the management plane.
 
 The format for this field is YYYY-MM-DDThh:ss:sssTZD:
 

@@ -25,7 +25,7 @@ Log Action (logset),Log Action,logset,Log Forwarding Profile that was applied to
 Session ID (sessionid),Session ID,sessionid,Session ID of the session being logged.
 Source Port (sport),Source Port,sport,Source port utilized by the session.
 Destination Port (dport),Destination Port,dport,Destination port utilized by the session.
-IP Protocol (proto),IP Protocol,proto,IP protocol associated with the session.
+IP Protocol (proto),Protocol,proto,IP protocol associated with the session.
 Action (action),Action,action,"Action taken for the session; possible values are:
 
 allow—session was allowed by policy

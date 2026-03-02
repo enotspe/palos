@@ -16,24 +16,23 @@
 # correction would break that log type. Use per_log_type instead.
 field_name_lookup_corrections:
   global:
-    "Threat/Content Name": "Threat ID"           # Data/Threat/URL: table name differs from format token
-    "Certificate Fingerprint": "Fingerprint"     # Decryption: table name differs from format token
-    "Gateway Priority": "Priority"               # GlobalProtect: table name differs from format token
-    "Gateway Name": "Gateway"                    # GlobalProtect: table name differs from format token
+    "Threat/Content Name": "Threat ID" # Data/Threat/URL: table name differs from format token
+    "Certificate Fingerprint": "Fingerprint" # Decryption: table name differs from format token
+    "Gateway Priority": "Priority" # GlobalProtect: table name differs from format token
+    "Gateway Name": "Gateway" # GlobalProtect: table name differs from format token
     "Gateway Selection Method": "Selection Type" # GlobalProtect: table name differs from format token
-    "SSL Response Time": "Response Time"         # GlobalProtect: table name differs from format token
+    "SSL Response Time": "Response Time" # GlobalProtect: table name differs from format token
     "IPv6 System Address": "IPv6 Source Address" # HIP_Match: table name differs from format token
-    "Threat/ContentType": "Threat/Content Type"  # Decryption: malformed key (missing space before parenthetical)
-    "Issuer Common Name": "Issuer Subject Common Name"  # Decryption: table name differs from format token
-    "Root Common Name": "Root Subject Common Name"      # Decryption: table name differs from format token
-    "End IP Address": "End User IP Address"      # GTP: table name differs from format token
+    "Threat/ContentType": "Threat/Content Type" # Decryption: malformed key (missing space before parenthetical)
+    "Issuer Common Name": "Issuer Subject Common Name" # Decryption: table name differs from format token
+    "Root Common Name": "Root Subject Common Name" # Decryption: table name differs from format token
+    "End IP Address": "End User IP Address" # GTP: table name differs from format token
     "Serving Network MCC": "Serving Country MCC" # GTP: table name differs from format token
-    "Strict Checking": "Strict Check"            # Tunnel_Inspection: table name differs from format token
-    "Security Rule UUID": "Rule UUID"            # Data/Threat/Traffic/Tunnel_Inspection/URL: table name differs from format token
-    "Generate Time": "Generated Time"            # most logs: table "Generate Time", format "Generated Time" (extra 'd')
-    "Parent Session Start Time": "Parent Start Time"  # some logs: table "Parent Session Start Time", format "Parent Start Time"
-    # Source/Destination MAC Address: table and format both use "Source MAC Address" (all-caps); parenthetical
-    # extraction gives src_mac/dst_mac directly — no correction needed here.
+    "Strict Checking": "Strict Check" # Tunnel_Inspection: table name differs from format token
+    "Security Rule UUID": "Rule UUID" # Data/Threat/Traffic/Tunnel_Inspection/URL: table name differs from format token
+    "Generate Time": "Generated Time" # most logs: table "Generate Time", format "Generated Time" (extra 'd')
+    "Parent Session Start Time": "Parent Start Time" # some logs: table "Parent Session Start Time", format "Parent Start Time"
+
     # DG Hierarchy variants handled by regex — no config entries needed
     # "Server Name Indication" and "Tunnel Inspection Rule" handled by relaxed \s*\( regex
     #
@@ -48,43 +47,43 @@ field_name_lookup_corrections:
     #   "PCAP ID" — GTP/Tunnel_Inspection use "PCAP ID" as format token; Threat/URL/Data use "PCAP_ID"
   per_log_type:
     IP_Tag_Log:
-      "Serial Number": "Serial"                  # IP_Tag: format uses abbreviated token "Serial", table has "Serial Number"
+      "Serial Number": "Serial" # IP_Tag: format uses abbreviated token "Serial", table has "Serial Number"
     Threat_Log:
-      "Source address": "Source Address"         # Threat: field table lowercase 'a', format uppercase 'A'
-      "Destination address": "Destination Address"   # Threat: same case mismatch
-      "Source Country": "Source Location"        # Threat: format "Source Location", table "Source Country"
-      "Destination Country": "Destination Location"  # Threat: format "Destination Location", table "Destination Country"
-      "PCAP ID": "PCAP_ID"                       # Threat: format "PCAP_ID" (underscore), table "PCAP ID" (space)
+      "Source address": "Source Address" # Threat: field table lowercase 'a', format uppercase 'A'
+      "Destination address": "Destination Address" # Threat: same case mismatch
+      "Source Country": "Source Location" # Threat: format "Source Location", table "Source Country"
+      "Destination Country": "Destination Location" # Threat: format "Destination Location", table "Destination Country"
+      "PCAP ID": "PCAP_ID" # Threat: format "PCAP_ID" (underscore), table "PCAP ID" (space)
     URL_Filtering_Log:
-      "Source address": "Source Address"         # URL: same case mismatch as Threat
-      "Destination address": "Destination Address"   # URL: same case mismatch
+      "Source address": "Source Address" # URL: same case mismatch as Threat
+      "Destination address": "Destination Address" # URL: same case mismatch
       # URL_Filtering format token IS "Source Country"/"Destination Country" (same as Traffic) — no correction needed
       # URL_Filtering format token IS "Threat/Content Type" (same as Traffic) — no correction needed; "PCAP_ID" still needed
-      "PCAP ID": "PCAP_ID"                       # URL: format "PCAP_ID" (underscore), table "PCAP ID" (space)
+      "PCAP ID": "PCAP_ID" # URL: format "PCAP_ID" (underscore), table "PCAP ID" (space)
     Data_Filtering_Log:
-      "Source address": "Source Address"         # Data: same case mismatch as Threat
-      "Destination address": "Destination Address"   # Data: same case mismatch
-      "PCAP ID": "PCAP_ID"                       # Data: same as Threat
+      "Source address": "Source Address" # Data: same case mismatch as Threat
+      "Destination address": "Destination Address" # Data: same case mismatch
+      "PCAP ID": "PCAP_ID" # Data: same as Threat
     Config_Log:
-      "Threat/Content Type": "Subtype"           # Config: format "Subtype", table "Threat/Content Type"
+      "Threat/Content Type": "Subtype" # Config: format "Subtype", table "Threat/Content Type"
     Traffic_Log:
-      "IP Protocol": "Protocol"                  # Traffic: format "Protocol", table "IP Protocol"
+      "IP Protocol": "Protocol" # Traffic: format "Protocol", table "IP Protocol"
     GTP_Log:
-      "Source Country": "Source Location"        # GTP: format "Source Location", table "Source Country"
-      "Destination Country": "Destination Location"  # GTP: format "Destination Location", table "Destination Country"
-      "IP Protocol": "Protocol"                  # GTP: format "Protocol", table "IP Protocol"
+      "Source Country": "Source Location" # GTP: format "Source Location", table "Source Country"
+      "Destination Country": "Destination Location" # GTP: format "Destination Location", table "Destination Country"
+      "IP Protocol": "Protocol" # GTP: format "Protocol", table "IP Protocol"
     Decryption_Log:
-      "High Resolution Timestamp": "High Res Timestamp"  # Decryption: format "High Res Timestamp", table "High Resolution Timestamp"
-      "Tunnel Type": "Tunnel"                    # Decryption: format "Tunnel", table "Tunnel Type"
+      "High Resolution Timestamp": "High Res Timestamp" # Decryption: format "High Res Timestamp", table "High Resolution Timestamp"
+      "Tunnel Type": "Tunnel" # Decryption: format "Tunnel", table "Tunnel Type"
     # GlobalProtect_Log: GlobalProtect field table does not include a "High Resolution Timestamp" row;
     # "High Res Timestamp" format token passes through and is caught by variable_name_corrections below.
     Tunnel_Inspection_Log:
-      "Source Country": "Source Location"        # Tunnel_Inspection: format "Source Location", table "Source Country"
-      "Destination Country": "Destination Location"  # Tunnel_Inspection: format "Destination Location", table "Destination Country"
-      "IP Protocol": "Protocol"                  # Tunnel_Inspection: format "Protocol", table "IP Protocol"
-      "Threat/Content Type": "Subtype"           # Tunnel_Inspection: format "Subtype", table "Threat/Content Type"
-      "Tunnel Type": "Tunnel"                    # Tunnel_Inspection: format "Tunnel", table "Tunnel Type"
-      "Dynamic User Group Name": "Dynamic User Group"  # Tunnel_Inspection: format "Dynamic User Group", table "Dynamic User Group Name"
+      "Source Country": "Source Location" # Tunnel_Inspection: format "Source Location", table "Source Country"
+      "Destination Country": "Destination Location" # Tunnel_Inspection: format "Destination Location", table "Destination Country"
+      "IP Protocol": "Protocol" # Tunnel_Inspection: format "Protocol", table "IP Protocol"
+      "Threat/Content Type": "Subtype" # Tunnel_Inspection: format "Subtype", table "Threat/Content Type"
+      "Tunnel Type": "Tunnel" # Tunnel_Inspection: format "Tunnel", table "Tunnel Type"
+      "Dynamic User Group Name": "Dynamic User Group" # Tunnel_Inspection: format "Dynamic User Group", table "Dynamic User Group Name"
 
 # variable_name_corrections: applied to variable names after _lookup_variable_names.
 # Corrects both the format token list AND the Variable Name column of the field table.
@@ -96,16 +95,16 @@ variable_name_corrections:
     # so lookup succeeds and returns time_generated from the parenthetical — no longer needed here.
     # "Generate Time" still passes through for IP_Tag_Log (table "Generated Time" ≠ format "Generate Time")
     # and Audit_Log (table "Generate Time" renamed to "Generated Time" by correction → format "Generate Time" fails).
-    "Generate Time": "time_generated"    # IP_Tag_Log/Audit_Log: "Generate Time" format token still fails lookup
+    "Generate Time": "time_generated" # IP_Tag_Log/Audit_Log: "Generate Time" format token still fails lookup
     # "Parent Start Time" may still pass through if "Parent Session Start Time" is absent from the field table
-    "Parent Start Time": "parent_start_time"  # safety fallback for logs where field is absent from field table
+    "Parent Start Time": "parent_start_time" # safety fallback for logs where field is absent from field table
 
     # The following were previously caught here as pass-through tokens but are now handled
     # by field_name_lookup_corrections.per_log_type (lookup succeeds → variable name from parenthetical):
     #"Source Location": "srcloc"         # now: per_log_type "Source Country" → "Source Location"
     #"Destination Location": "dstloc"    # now: per_log_type "Destination Country" → "Destination Location"
     #"Protocol": "proto"                 # now: per_log_type "IP Protocol" → "Protocol"
-    "High Res Timestamp": "high_res_timestamp"   # GlobalProtect: field table has no "High Resolution Timestamp" row → pass-through
+    "High Res Timestamp": "high_res_timestamp" # GlobalProtect: field table has no "High Resolution Timestamp" row → pass-through
     #"Subtype": "subtype"                # now: per_log_type "Threat/Content Type" → "Subtype"
     #"Tunnel": "tunnel"                  # now: per_log_type "Tunnel Type" → "Tunnel"
     #"Dynamic User Group": "dynusergroup_name"  # now: per_log_type "Dynamic User Group Name" → "Dynamic User Group"
@@ -114,27 +113,27 @@ variable_name_corrections:
     # MAC address capitalization: format string is inconsistent across log types.
     # Threat/URL/Data use "Source MAC Address" (all-caps) → table match → parenthetical gives src_mac directly.
     # Traffic/Auth/Decryption use "Source Mac Address" (mixed case) → table "Source MAC Address" → lookup fails → caught here.
-    "Source Mac Address": "src_mac"      # Traffic/Auth/Decryption: format "Mac" (mixed), table "MAC" (all-caps) → lookup fails
+    "Source Mac Address": "src_mac" # Traffic/Auth/Decryption: format "Mac" (mixed), table "MAC" (all-caps) → lookup fails
     "Destination Mac Address": "dst_mac" # Traffic/Decryption: same capitalization mismatch
 
     # Audit_Log: fields with no parenthetical in PA docs → pass through as raw long names
-    "Serial Number": "serial"            # Audit_Log: no parenthetical; found + empty Variable Name → placeholder pass-through
-    "Event ID": "eventid"                # Audit_Log: no parenthetical
-    "Object": "object"                   # Audit_Log: no parenthetical
-    "CLI Command": "cmd"                 # Audit_Log: no parenthetical
-    "Severity": "severity"               # Audit_Log: no parenthetical
+    "Serial Number": "serial" # Audit_Log: no parenthetical; found + empty Variable Name → placeholder pass-through
+    "Event ID": "eventid" # Audit_Log: no parenthetical
+    "Object": "object" # Audit_Log: no parenthetical
+    "CLI Command": "cmd" # Audit_Log: no parenthetical
+    "Severity": "severity" # Audit_Log: no parenthetical
 
     # Field table typos: incorrect variable names produced by parenthetical extraction
-    "FUTURE_USER": "FUTURE_USE"          # User-ID log: typo in PA docs field table
-    "high_res": "high_res_timestamp"     # IP-Tag, User-ID, Auth, URL, Threat, etc.: truncated in PA field table
-    "event_id": "eventid"                # IP-Tag: underscore wrong in PA field table
-    "tunnelid/imsi": "tunnel_id/imsi"    # Traffic: PA field table lists without underscore before slash
-    "Tunnel ID/IMSI": "tunnel_id/imsi"   # Tunnel_Inspection_Log: format "Tunnel ID/IMSI", table "Tunnel ID" → lookup fails
+    "FUTURE_USER": "FUTURE_USE" # User-ID log: typo in PA docs field table
+    "high_res": "high_res_timestamp" # IP-Tag, User-ID, Auth, URL, Threat, etc.: truncated in PA field table
+    "event_id": "eventid" # IP-Tag: underscore wrong in PA field table
+    "tunnelid/imsi": "tunnel_id/imsi" # Traffic: PA field table lists without underscore before slash
+    "Tunnel ID/IMSI": "tunnel_id/imsi" # Tunnel_Inspection_Log: format "Tunnel ID/IMSI", table "Tunnel ID" → lookup fails
     "Monitor Tag/IMEI": "monitortag/imei" # Tunnel_Inspection_Log: format "Monitor Tag/IMEI", table "Monitor Tag" → lookup fails
-    "tunnelid": "tunnel_id/imsi"         # Tunnel_Inspection_Log: parenthetical produces "tunnelid" without /imsi suffix
-    "monitortag": "monitortag/imei"      # Tunnel_Inspection_Log: parenthetical produces "monitortag" without /imei suffix
-    "nsdsai_sst": "nssai_sst"            # GTP: "nsdsai" → "nssai" typo in PA docs
-    "nsdsai_sd": "nssai_sd"              # GTP: same typo
+    "tunnelid": "tunnel_id/imsi" # Tunnel_Inspection_Log: parenthetical produces "tunnelid" without /imsi suffix
+    "monitortag": "monitortag/imei" # Tunnel_Inspection_Log: parenthetical produces "monitortag" without /imei suffix
+    "nsdsai_sst": "nssai_sst" # GTP: "nsdsai" → "nssai" typo in PA docs
+    "nsdsai_sd": "nssai_sd" # GTP: same typo
   per_log_type: {}
 
 # per_log_corrections: raw format string token corrections applied at extraction time.

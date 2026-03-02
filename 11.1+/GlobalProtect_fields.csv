@@ -25,7 +25,7 @@ vulnerability —Vulnerability exploit detected via a Vulnerability Protection p
 wildfire —A WildFire verdict generated when the firewall submits a file to WildFire per a WildFire Analysis profile and a verdict (malicious, phishing, grayware, or benign, depending on what you are logging) is logged in the WildFire Submissions log.
 
 wildfire-virus—Virus detected via an Antivirus profile."
-Generate Time (time_generated),Generate Time,time_generated,The time that the log was generated on the dataplane.
+Generate Time (time_generated),Generated Time,time_generated,The time that the log was generated on the dataplane.
 Virtual System (vsys),Virtual System,vsys,The Virtual System associated with the session.
 Event ID (eventid),Event ID,eventid,A string showing the name of the event.
 Stage (stage),Stage,stage,"A string showing the stage of the connection (for example, before-login, login, or tunnel)."
