@@ -140,10 +140,14 @@ to the `Field Name lookup` column. This bridges cases where the field table's fi
 differs from the format string token — for example, "Security Rule UUID" in the field table maps
 to "Rule UUID" in the format string.
 
-A correction is only added here when the table key is NEVER the correct format token for any
-log type. If a log type uses the table key as its format token, the global correction would
-break that log type; in that case the format token passes through lookup unchanged and is caught
-downstream by `variable_name_corrections`.
+Implementation: global and per_log_type are merged into a single dict with
+`corrections.update(per_log_type)`, so per_log_type entries override global for the same key.
+This means a per_log_type entry with an identity mapping (e.g. `"X": "X"`) suppresses a global
+rename for that specific log type — the table key stays unchanged and lookup proceeds normally.
+
+Global entries are used only when the correction applies to multiple log types AND the table key
+is never the correct format token for any log type. Single-log-type corrections and cases where
+some logs need the original table key as their format token use `per_log_type` instead.
 
 The corrected field table is passed to Stage 4 and eventually saved to `*_fields.csv`.
 
@@ -207,25 +211,36 @@ Applied to both `*_fields.csv` Variable Name column and the transformed format t
 ### Field name lookup correction (table name differs from format token)
 
 The format string uses a different name than what appears in the field table's `Field Name`
-column (before the parenthetical).
+column (before the parenthetical). Use the exact text from the `Field Name lookup` column as the key.
+
+Use **`global`** when the correction applies to multiple log types AND the table key is never
+the correct format token for any log type:
 
 ```yaml
 field_name_lookup_corrections:
   global:
-    "Field Name lookup value in table": "Token as it appears in format string"  # LogType: reason
+    "Field Name lookup value in table": "Token as it appears in format string"  # LogTypes: reason
 ```
 
-Use the exact text that appears in the field table `Field Name lookup` column as the key.
-
-### Per-log-type field name lookup correction
-
-Same concept as global, but only applies to one log type:
+Use **`per_log_type`** when the correction applies to only one log type, or when some log types
+use the original table key as their format token (a global entry would break those logs):
 
 ```yaml
 field_name_lookup_corrections:
   per_log_type:
     LogType_Name:
       "Field Name lookup value": "Format string token"
+```
+
+Use a **per_log_type identity mapping** to suppress a global correction for a specific log type.
+Per_log_type overrides global for the same key, so `"X": "X"` keeps the table key unchanged
+while other log types still get the global rename applied:
+
+```yaml
+field_name_lookup_corrections:
+  per_log_type:
+    LogType_Name:
+      "Field Name lookup value": "Field Name lookup value"  # identity: suppress global rename
 ```
 
 ### Per-log-type variable name correction (first-occurrence semantics)
