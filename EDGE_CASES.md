@@ -92,28 +92,16 @@ re.match(r"(?:Device Group Hierarchy(?:\s+Level)?|DG Hierarchy Level)\s+(\d+)", 
 
 ### Global field name lookup corrections
 
-These correct field table lookup keys that only need renaming for specific log types where the
-table key is NEVER the correct format token for any log type. Entries where the table key IS the
-correct format token for some log type cannot be global — they are handled per_log_type instead.
+These correct field table lookup keys shared across multiple log types where the table key is
+NEVER the correct format token for any log type. Single-log-type corrections and entries where
+the table key IS the correct format token for some log type are handled per_log_type instead.
 
 | Field Name lookup (in table) | Format string token | Variable Name | Log Type | Notes |
 |---|---|---|---|---|
 | Threat/Content Name | "Threat ID" | `threatid` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Table name differs from format token |
-| Certificate Fingerprint | "Fingerprint" | `fingerprint` | Decryption_Log | Table name differs from format token |
-| Gateway Priority | "Priority" | `priority` | GlobalProtect_Log | Table name differs from format token |
-| Gateway Name | "Gateway" | `gateway` | GlobalProtect_Log | Table name differs from format token |
-| Gateway Selection Method | "Selection Type" | `selection_type` | GlobalProtect_Log | Table name differs from format token |
-| SSL Response Time | "Response Time" | `response_time` | GlobalProtect_Log | Table name differs from format token |
-| IPv6 System Address | "IPv6 Source Address" | `srcipv6` | HIP_Match_Log | Table name differs from format token |
-| Threat/ContentType | "Threat/Content Type" | `subtype` | Decryption_Log | Typo in PA docs: missing space in table key |
-| Issuer Common Name | "Issuer Subject Common Name" | `issuer_cn` | Decryption_Log | Table name differs from format token |
-| Root Common Name | "Root Subject Common Name" | `root_cn` | Decryption_Log | Table name differs from format token |
-| End IP Address | "End User IP Address" | `end_ip_adr` | GTP_Log | Table name differs from format token |
-| Serving Network MCC | "Serving Country MCC" | `mcc` | GTP_Log | Table name differs from format token |
-| Strict Checking | "Strict Check" | `strict_check` | Tunnel_Inspection_Log | Table name differs from format token |
 | Security Rule UUID | "Rule UUID" | `rule_uuid` | Data_Filtering_Log, Threat_Log, Traffic_Log, Tunnel_Inspection_Log, URL_Filtering_Log | Table name differs from format token |
 | Generate Time | "Generated Time" | `time_generated` | most log types | Table "Generate Time", format "Generated Time" (extra 'd'); lookup then returns variable name from parenthetical |
-| Parent Session Start Time | "Parent Start Time" | `parent_start_time` | some log types | Table name differs from format token |
+| Parent Session Start Time | "Parent Start Time" | `parent_start_time` | Data_Filtering_Log, Threat_Log, URL_Filtering_Log | Table name differs from format token |
 
 The following are NOT global because the table key IS the correct format token for some log types
 (renaming globally would break those logs). They are handled by `field_name_lookup_corrections.per_log_type`
@@ -134,6 +122,7 @@ for the specific logs that use the different format token:
 
 | Log Type | Field Name lookup (in table) | Format string token | Notes |
 |---|---|---|---|
+| HIP_Match_Log | "IPv6 System Address" | "IPv6 Source Address" | Table name differs from format token |
 | IP_Tag_Log | "Serial Number" | "Serial" | Format string uses abbreviated token |
 | IP_Tag_Log | "Generated Time" | "Generate Time" | IP_Tag table has "Generated Time", format uses "Generate Time" — per_log_type rename makes lookup succeed; parenthetical gives `time_generated` directly |
 | Audit_Log | "Generate Time" | "Generate Time" | Identity mapping suppresses global's "Generate Time"→"Generated Time" rename; table key stays "Generate Time" so format token finds the (empty) row → placeholder pass-through → `variable_name_corrections` catches it |
@@ -153,14 +142,25 @@ for the specific logs that use the different format token:
 | GTP_Log | "Source Country" | "Source Location" | Same as Threat |
 | GTP_Log | "Destination Country" | "Destination Location" | Same as Threat |
 | GTP_Log | "IP Protocol" | "Protocol" | Same as Traffic |
+| GTP_Log | "End IP Address" | "End User IP Address" | Table name differs from format token |
+| GTP_Log | "Serving Network MCC" | "Serving Country MCC" | Table name differs from format token |
 | Decryption_Log | "High Resolution Timestamp" | "High Res Timestamp" | Format "High Res Timestamp", table "High Resolution Timestamp" |
 | Decryption_Log | "Tunnel Type" | "Tunnel" | Format "Tunnel", table "Tunnel Type" |
+| Decryption_Log | "Certificate Fingerprint" | "Fingerprint" | Table name differs from format token |
+| Decryption_Log | "Threat/ContentType" | "Threat/Content Type" | Malformed key in PA docs: missing space before parenthetical |
+| Decryption_Log | "Issuer Common Name" | "Issuer Subject Common Name" | Table name differs from format token |
+| Decryption_Log | "Root Common Name" | "Root Subject Common Name" | Table name differs from format token |
+| GlobalProtect_Log | "Gateway Priority" | "Priority" | Table name differs from format token |
+| GlobalProtect_Log | "Gateway Name" | "Gateway" | Table name differs from format token |
+| GlobalProtect_Log | "Gateway Selection Method" | "Selection Type" | Table name differs from format token |
+| GlobalProtect_Log | "SSL Response Time" | "Response Time" | Table name differs from format token |
 | Tunnel_Inspection_Log | "Source Country" | "Source Location" | Same as Threat |
 | Tunnel_Inspection_Log | "Destination Country" | "Destination Location" | Same as Threat |
 | Tunnel_Inspection_Log | "IP Protocol" | "Protocol" | Same as Traffic |
 | Tunnel_Inspection_Log | "Threat/Content Type" | "Subtype" | Same as Config |
 | Tunnel_Inspection_Log | "Tunnel Type" | "Tunnel" | Same as Decryption |
 | Tunnel_Inspection_Log | "Dynamic User Group Name" | "Dynamic User Group" | Format "Dynamic User Group", table "Dynamic User Group Name" |
+| Tunnel_Inspection_Log | "Strict Checking" | "Strict Check" | Table name differs from format token |
 
 ---
 
